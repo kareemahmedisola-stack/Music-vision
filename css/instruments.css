@@ -1,0 +1,186 @@
+/* Staffwise – instrument playgrounds */
+.gt{display:grid;grid-template-columns:78px repeat(13,minmax(46px,1fr));gap:3px;overflow-x:auto;margin-top:14px;padding-bottom:6px}
+.gt span{font-size:12px;color:var(--mute);align-self:center}
+.gt button{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:12px 0;font-size:12px;cursor:pointer;touch-action:manipulation}
+.gt button.on{border-color:var(--brass);background:color-mix(in srgb,var(--brass) 25%,var(--panel))}
+.gt button:active{background:var(--brass);color:var(--on-brass)}
+.opts button[aria-pressed=true]{border-color:var(--brass);background:color-mix(in srgb,var(--brass) 28%,var(--panel))}
+.opts button:active:not(:disabled){background:color-mix(in srgb,var(--brass) 28%,var(--panel))}
+.set .ghost{padding:6px 14px;border-radius:999px;font-size:14px}
+.set .next{margin:0}
+#nn{overflow-wrap:anywhere}
+.lesson .paper svg.staff{color:var(--navy)}
+.lesson .tbl svg.staff{margin:0;color:var(--ink)}
+
+/* ---- one idea per line ---- */
+.ln{display:block;margin:.3em 0}
+.lesson .pg{margin:18px 0}
+.lesson .pg p.ln{margin:7px 0}
+.stage .q .ln{margin:.28em 0}
+.sub .ln,.total .ln,.welcome .ln,.fb .ln,.lines .ln,.unlock .ln{display:block;margin:.25em 0}
+.fb .ln{font-weight:400}
+.review small .ln{display:block}
+
+/* ---- buttons on their own lines ---- */
+.tools.stack{flex-direction:column;align-items:stretch;gap:10px}
+.tools.stack button{width:100%;max-width:460px;margin:0}
+.end .btnrow{display:flex;flex-direction:column;gap:12px;max-width:400px;margin:22px auto 0}
+.end .btnrow button{width:100%;margin:0}
+
+/* ---- locked modes ---- */
+.row.locked .go{border-style:dashed;opacity:.82}
+.row.locked .go b{color:var(--mute)}
+.row.locked .lv{font-size:24px}
+.row .go.nope{animation:shake .4s}
+.end .unlock{margin:14px auto;padding:12px 18px;border:2px solid var(--ok);border-radius:12px;background:var(--panel);max-width:400px;animation:glow 1.4s 3}
+
+/* ---- effects ---- */
+#wv{display:block;margin:10px auto 0;width:100%;max-width:420px;height:60px}
+.end .stars span{display:inline-block;opacity:0;animation:starIn .75s cubic-bezier(.2,1.7,.4,1) both}
+.end .stars span.on{text-shadow:0 0 18px var(--brass)}
+@keyframes starIn{from{opacity:0;transform:scale(.1) rotate(-120deg)}to{opacity:1;transform:none}}
+.end .lvup{animation:glow 1.2s 4,rise .7s both}
+.bar i{box-shadow:0 0 10px var(--brass);transition:width .45s ease}
+.stage.flash-ok{animation:flashOk .8s}
+.stage.flash-bad{animation:flashBad .6s}
+@keyframes flashOk{0%{box-shadow:0 0 0 0 rgba(79,209,165,.85)}100%{box-shadow:0 0 0 30px rgba(79,209,165,0)}}
+@keyframes flashBad{0%{box-shadow:0 0 0 0 rgba(255,107,107,.85)}100%{box-shadow:0 0 0 24px rgba(255,107,107,0)}}
+.opts button.ok{animation:okPop .6s}
+@keyframes okPop{40%{transform:scale(1.06)}}
+.hit{animation:hit .42s}
+@keyframes hit{0%{box-shadow:0 0 0 0 rgba(240,180,60,.95)}35%{transform:scale(.93)}100%{transform:scale(1);box-shadow:0 0 0 18px rgba(240,180,60,0)}}
+.shake{animation:shake .4s}
+#bl.blow{animation:glow .8s infinite;border-color:var(--brass)}
+.toast{position:fixed;left:50%;top:18px;transform:translate(-50%,-40px);background:var(--brass);color:var(--on-brass);font-weight:800;padding:10px 22px;border-radius:999px;z-index:50;box-shadow:0 8px 28px rgba(0,0,0,.35);animation:toastIn .45s forwards}
+.toast.out{animation:toastOut .5s forwards}
+@keyframes toastIn{to{transform:translate(-50%,0)}}
+@keyframes toastOut{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-40px);opacity:0}}
+
+/* ---- lessons: goal, key idea, stacked navigation ---- */
+.goal{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--brass);border-radius:10px;padding:12px 16px;margin:14px 0}
+.goal ol{margin:8px 0 0 22px;padding:0}.goal li{margin:5px 0}
+.keyidea{background:color-mix(in srgb,var(--brass) 14%,var(--panel));border:1px solid var(--brass);border-radius:10px;padding:12px 16px;margin:20px 0}
+.keyidea b{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--brass);margin-bottom:4px}
+.keyidea .ln{font-weight:600}
+.lesson .tools.stack{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.lesson .tools.stack button{width:100%;max-width:520px;margin:0}
+
+/* ---- start here, ready screen ---- */
+.starthere{margin:18px 0}
+.starthere h2{font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--brass);margin:0 0 8px}
+.starthere .tools.stack button{max-width:520px}
+.ready .keyidea .ln{font-weight:500;margin:.4em 0}
+
+/* ---- keyboard duet ---- */
+.duet{margin-top:12px}
+.duet .dl1{margin:10px 0 4px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.dr{display:grid;gap:4px;user-select:none;touch-action:manipulation}
+.dr.mel{grid-template-columns:repeat(12,minmax(0,1fr))}
+.dr.chd{grid-template-columns:repeat(11,minmax(0,1fr));margin-left:calc(100% / 24);margin-right:calc(100% / 24)}
+.dr button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:0;min-height:68px;padding:6px 2px;
+  background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:10px;cursor:pointer}
+.dr.chd button{min-height:84px}
+.dr button kbd{font:inherit;font-size:12px;font-weight:800;opacity:.65}
+.dr button b{font-size:clamp(11px,2.6vw,17px);font-weight:800;line-height:1.1}
+.dr button i{font-style:normal;font-size:clamp(9px,2vw,12px);color:var(--mute)}
+.dr.mel button{border-color:color-mix(in srgb,var(--blue) 55%,var(--line))}
+.dr.chd button{border-color:color-mix(in srgb,var(--brass) 55%,var(--line))}
+.dr button.on{background:var(--brass);color:var(--on-brass);border-color:var(--brass);transform:translateY(3px);box-shadow:0 0 16px var(--brass)}
+.dr button.on i{color:inherit}
+.dr.mel button.on{background:var(--blue);border-color:var(--blue);box-shadow:0 0 16px var(--blue);color:#fff}
+
+/* ---- recorder ---- */
+.rec{margin-top:22px;padding:14px 16px;border:2px solid var(--line);border-radius:var(--r);background:var(--panel)}
+.rec h3{margin:0 0 6px;font-size:20px}
+.rec .rhint{margin:0 0 6px;color:var(--mute);font-size:14px}
+.rec .set{margin:4px 0}
+.rec .next{margin:6px 0 0}
+.rec .next.rec-on{background:var(--bad);color:#fff}
+.rec .next.rec-on::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:#fff;margin-right:8px;animation:recblink 1s infinite}
+@keyframes recblink{50%{opacity:.25}}
+.rec .lvl{max-width:none;height:8px;margin-top:10px}
+.rec .lvl i{transition:width .1s}
+.takes{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:12px}
+.takes li{border-top:1px solid var(--line);padding-top:10px}
+.takes li.none{border:0;color:var(--mute);padding:0}
+.takes .rmeta{color:var(--mute);font-size:13px}
+.takes audio{display:block;width:100%;margin:8px 0 2px}
+.takes .tools{margin-top:6px}
+.takes .tools a.dl,.takes .tools button{background:none;border:2px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 14px;cursor:pointer;text-decoration:none;font-size:15px}
+.takes .tools a.dl:hover,.takes .tools button:hover{border-color:var(--brass)}
+
+/* ---- drum kit layout ---- */
+.opts.kit{grid-template-columns:repeat(4,minmax(0,1fr))}
+.opts.kit button{min-height:64px;padding:10px 4px;font-size:15px}
+.opts.kit button.kick,.opts.kit button.snare{min-height:96px;font-size:18px}
+.opts.kit button.crash,.opts.kit button.ride,.opts.kit button.hat,.opts.kit button.ohat{border-style:dashed}
+.opts.kit button.snare,.opts.kit button.kick{border-color:var(--brass)}
+
+/* ---- duet practice ---- */
+.prac{margin-top:20px;padding:12px 16px;border:2px solid var(--line);border-radius:var(--r);background:var(--panel)}
+.prac h3{margin:0 0 4px;font-size:19px}
+.prac .total{margin:8px 0 0}
+.prac .next{margin:6px 0 0}
+.bdots{display:flex;gap:10px;margin-top:10px}
+.bdots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);transition:background .08s}
+.bdots i.on{background:var(--brass);border-color:var(--brass);box-shadow:0 0 10px var(--brass)}
+.dr button.next{outline:3px dashed var(--ok);outline-offset:2px;border-color:var(--ok)}
+.dr button.hint{outline:3px solid var(--ok);box-shadow:0 0 18px var(--ok)}
+
+/* ---- live notation ---- */
+.lsec{margin-top:20px;padding:12px 16px;border:2px solid var(--line);border-radius:var(--r);background:var(--panel)}
+.lsec h3,.midi h3{margin:0 0 6px;font-size:19px}
+.lsv{width:100%;height:auto;display:block;background:var(--paper);border-radius:10px;color:#0e1726}
+.lsv line{stroke:#51617d;stroke-width:1.2}
+.lsv line.ld{stroke:#0e1726}
+.lsv ellipse{fill:#0e1726}
+.lsv text{fill:#0e1726}
+.lsv .lt{font-size:8px;fill:#51617d}
+.lsv .lb{font-size:11px;font-weight:700}
+.lsv .ac{font-size:15px}
+/* ---- take editing ---- */
+.takes .mxr{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:8px;font-size:14px;color:var(--mute)}
+.takes .mxr label{display:flex;align-items:center;gap:6px}
+.takes .mxr input[type=checkbox]{width:20px;height:20px;accent-color:var(--brass)}
+.takes li.mixbar{border:0;padding:0}
+.takes li.mixbar button{background:var(--brass);color:var(--on-brass);border:0;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer}
+.takes .edit{margin-top:10px;padding:10px 12px;border:2px dashed var(--line);border-radius:12px}
+.takes .edit[hidden]{display:none}
+.takes .edit canvas{width:100%;height:60px;background:var(--bg);border-radius:8px;display:block}
+.takes .edit output{min-width:3ch;display:inline-block;text-align:right}
+
+/* ---- practice tracking ---- */
+.practice .pgs{margin:6px 0;font-size:15px}
+.practice .meter{max-width:none;height:10px}
+.week{list-style:none;display:flex;gap:8px;align-items:flex-end;height:70px;margin:12px 0 0;padding:0}
+.week li{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px}
+.week i{display:block;width:100%;max-width:34px;border-radius:5px 5px 0 0;background:var(--line);min-height:3px}
+.week i.met{background:var(--ok)}
+.week span{font-size:11px;color:var(--mute)}
+.practice .set{margin-top:6px}
+/* ---- guide ---- */
+.guide h2{font-size:20px;margin:26px 0 8px}
+.guide .gtab{width:100%;border-collapse:collapse;font-size:15px}
+.guide .gtab th,.guide .gtab td{text-align:left;padding:8px 6px;border-top:1px solid var(--line);vertical-align:top}
+.guide .gtab th{width:42%;font-weight:600}
+.guide kbd{display:inline-block;font:inherit;font-size:13px;font-weight:700;padding:1px 7px;border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;background:var(--panel);margin:1px 0}
+.guide li{margin:6px 0}
+.guide code{font-size:14px}
+
+.opts.kit.perc{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:10px}
+.pch{margin:16px 0 0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:600}
+
+/* ---- pattern fixer ---- */
+#fxr h4{margin:12px 0 4px;font-size:16px}
+#fxr ul{margin:0;padding-left:20px;font-size:15px}
+#fxr li{margin:6px 0}
+
+/* ---- voice studio ---- */
+.prac h4{margin:16px 0 4px;font-size:16px}
+.vsnow{min-height:1.4em;font-size:20px;font-weight:800;color:var(--brass);margin:8px 0 0}
+.chk{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:15px}
+.chk input{width:22px;height:22px;accent-color:var(--brass)}
+.set output{min-width:2.5ch;display:inline-block}
+.h3d{display:block;width:100%;height:240px;border-radius:18px;margin:0 0 6px;cursor:pointer;touch-action:manipulation;box-shadow:0 8px 30px rgba(40,70,200,.35)}
+.h3p{font-size:13px;padding:4px 12px;margin:0 0 10px}
+@media (max-width:480px){.h3d{height:210px}}

@@ -1,0 +1,65 @@
+/* Staffwise – illustrated lessons */
+.lesson{background:var(--panel);border:2px solid var(--line);border-radius:var(--r);padding:20px}
+.ltop{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;color:var(--mute);margin-bottom:10px}
+.ltop button{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer}
+.dots{display:flex;gap:6px;margin:6px 0 18px}
+.dots i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.dots i.on{background:var(--brass)}
+.dots i.now{background:var(--brass);box-shadow:0 0 0 2px color-mix(in srgb,var(--brass) 40%,transparent)}
+.kicker{margin:0;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--brass);font-weight:800}
+.lesson h2{font-size:clamp(24px,5vw,31px);margin:2px 0 10px;line-height:1.15}
+.lesson h2:focus{outline:none}
+.lesson p{font-size:18px;margin:10px 0}
+.lesson .lead{font-size:20px}
+
+.paper{background:var(--paper);color:var(--navy);border-radius:12px;padding:12px;margin:14px 0;text-align:center}
+.paper .staff{margin:0 auto;display:block}
+.paper .cap{font-size:14px;color:#51617d;margin:2px 0 0}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin:14px 0}
+.pair .paper{margin:0}
+
+.mnem{font-size:19px;margin:12px 0}
+.mnem span{display:inline-block;margin-right:8px;white-space:nowrap}
+.mnem b{color:var(--brass);font-size:1.3em}
+
+.tip{border-left:4px solid var(--brass);background:color-mix(in srgb,var(--brass) 10%,var(--panel));padding:10px 14px;border-radius:0 10px 10px 0;margin:14px 0;font-size:16px}
+.tip b{color:var(--brass)}
+
+.tbl{width:100%;border-collapse:collapse;margin:14px 0;font-size:16px}
+.tbl th,.tbl td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl thead th{color:var(--mute);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.tbl tbody th{font-weight:700;color:var(--ink)}
+.tbl td small{color:var(--mute)}
+
+.mini{background:none;border:2px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer;white-space:nowrap}
+.mini:hover{border-color:var(--brass)}
+.paper .mini{color:var(--navy);border-color:#9fb0cf}
+.btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
+
+/* beat grid for note values */
+.beats{margin:14px 0}
+.brow{display:grid;grid-template-columns:104px 1fr;gap:8px;align-items:center;margin:6px 0;font-size:14px}
+.bgrid{display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
+.bgrid i{height:24px;border-radius:5px;background:var(--brass);opacity:.92}
+.bgrid i:nth-child(even){background:color-mix(in srgb,var(--brass) 70%,var(--blue))}
+.bgrid.head i{background:none;height:auto;text-align:center;font-style:normal;color:var(--mute);font-size:12px;border-left:2px solid var(--line);border-radius:0}
+.vals{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.vals figure{margin:0;flex:1 1 90px;max-width:120px;text-align:center}
+.vals figcaption{font-size:13px;font-weight:600;color:var(--navy)}
+.vals .staff{max-width:80px;margin:0 auto}
+
+/* tempo / dynamics scales */
+.scale{display:flex;gap:4px;margin:12px 0}
+.scale span{flex:1;text-align:center;padding:8px 2px;border-radius:8px;background:var(--panel);border:1px solid var(--line);font-weight:700;font-size:15px}
+.scale small{display:block;font-weight:400;color:var(--mute);font-size:11px}
+
+/* circle of fifths */
+.cof{width:100%;max-width:330px;height:auto;display:block;margin:0 auto}
+.cof circle{stroke:#0e1726;stroke-width:1.5}
+.cof .k{font-size:14px;font-weight:800;text-anchor:middle;fill:#0e1726}
+.cof .n{font-size:9px;text-anchor:middle;fill:#0e1726}
+.cof .c{font-size:11px;text-anchor:middle;fill:#51617d}
+
+/* practice step */
+.try-note{font-size:14px;color:var(--mute);margin:0 0 4px}
+.kbds kbd{border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:1px 7px;font:inherit;font-size:14px;background:var(--bg)}
