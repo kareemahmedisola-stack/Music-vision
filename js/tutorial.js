@@ -50,7 +50,7 @@ function tutorial(m, again) {
     const body = t.practice
       ? `<div class="lead">${lines('Here is a practice question. Nothing is scored and there is no timer. Take your time and listen or look closely.')}</div><div id="try"></div>`
       : t.p.map(x => lines(x)).join('') + (typeof t.vis === 'string' ? t.vis : '');
-    const goal = i === 0 && AID.goal ? `<div class="goal"><b>By the end of this lesson you can ${AID.goal}.</b><ol>${L.steps.map(s => `<li>${s.h}</li>`).join('')}</ol></div>` : '';
+    const goal = i === 0 && AID.goal ? `<div class="goal"><b>By the end of this lesson you can ${AID.goal}.</b><details><summary>See the steps</summary><ol>${L.steps.map(s => `<li>${s.h}</li>`).join('')}</ol></details></div>` : '';
     const idea = !t.practice && !t.recap && ki[i] ? `<div class="keyidea"><b>Key idea</b>${lines(ki[i], 'span')}</div>` : '';
     app.innerHTML =
       `<article class="lesson" aria-labelledby="qh">` +
@@ -59,8 +59,8 @@ function tutorial(m, again) {
       `<p class="kicker">${esc(L.title)}</p><h2 id="qh" tabindex="-1">${title}</h2>${goal}${body}${idea}` +
       `<div class="tools stack">${t.hear ? `<button type="button" class="mini" id="td" ${t.hear[0]}>🔊 ${t.hear[1]}</button>` : ''}` +
       `<button type="button" id="tn" class="next">${last ? (again ? 'Back to the game' : m === 'start' ? 'Go to the menu' : gen ? 'Start the questions' : 'Open the ' + L.title.toLowerCase()) : 'Next: ' + esc(nameOf(i + 1)) + ' →'}</button>` +
-      `<button type="button" id="tb">${i ? '← Previous: ' + esc(nameOf(i - 1)) : again ? '← Back to the game' : '← Back to the menu'}</button>` +
-      `${last ? '' : '<button type="button" id="ts">Skip lesson</button>'}</div></article>`;
+      `<div class="navrow"><button type="button" id="tb">${i ? '← Previous: ' + esc(nameOf(i - 1)) : again ? '← Back to the game' : '← Back to the menu'}</button>` +
+      `${last ? '' : '<button type="button" id="ts">Skip lesson</button>'}</div></div></article>`;
     $('#qh').focus(); scrollTo(0, 0);
     wireDemos();
     $('#lx').onclick = leave;

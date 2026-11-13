@@ -3,13 +3,13 @@
    - Network-first: when you are online you always get the newest files, and each one is re-saved (the Google font too, when it loads).
    - Offline: the saved copy is used, so the whole game, your progress and your recordings still work.
    Bump VERSION whenever you change any file. */
-const VERSION = 'staffwise-v23';
+const VERSION = 'staffwise-v24';
 const ASSETS = [
   './', 'index.html', 'manifest.webmanifest',
-  'css/base.css', 'css/game.css', 'css/lessons.css', 'css/instruments.css',
+  'css/base.css', 'css/game.css', 'css/lessons.css', 'css/instruments.css', 'css/ux.css',
   'js/state.js', 'js/audio.js', 'js/fx.js', 'js/notation.js', 'js/questions.js',
   'js/lessons.js', 'js/lessonaids.js', 'js/piano.js', 'js/tutorial.js', 'js/screens.js', 'js/instruments.js',
-  'js/livestaff.js', 'js/midi.js', 'js/takeedit.js', 'js/recorder.js', 'js/duet.js', 'js/duetplay.js', 'js/fixer.js', 'js/voice.js', 'js/songs.js', 'js/voice2.js', 'js/review.js', 'js/plan.js', 'js/tools.js', 'js/setup.js', 'js/scene3d.js', 'js/why.js', 'js/practice.js', 'js/guide.js',
+  'js/livestaff.js', 'js/midi.js', 'js/takeedit.js', 'js/recorder.js', 'js/duet.js', 'js/duetplay.js', 'js/fixer.js', 'js/voice.js', 'js/songs.js', 'js/voice2.js', 'js/review.js', 'js/plan.js', 'js/tools.js', 'js/setup.js', 'js/scene3d.js', 'js/why.js', 'js/practice.js', 'js/guide.js', 'js/hud.js',
   'js/speech.js', 'js/main.js',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'
 ];

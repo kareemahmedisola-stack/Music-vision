@@ -26,20 +26,24 @@ function practiceHtml() {
   let week = 0, total = 0;
   Object.values(P.log || {}).forEach(l => { total += l.sec || 0; });
   for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const l = dayLog(dayKey(d)) || { sec: 0 }; week += l.sec; days.push([d.toLocaleDateString(undefined, { weekday: 'short' }), d.toLocaleDateString(undefined, { weekday: 'long' }), l]); }
-  return `<section class="grp practice" id="prsec" aria-label="Your practice"><h2>Your practice</h2>` +
+  return `<section class="grp practice" id="prsec" aria-label="Your practice"><h2>Today</h2>` +
     `<p class="pgs" id="pgoal" role="status">Today: ${minTxt(t.sec)} of ${g} ${g === 1 ? 'minute' : 'minutes'}${t.met ? '. Goal reached!' : ''}</p>` +
     `<span class="meter" role="img" aria-label="${pct} percent of today's goal"><i style="width:${pct}%"></i></span>` +
-    `<p class="pgs">${st ? '🔥 ' : ''}Day streak: ${st} ${st === 1 ? 'day' : 'days'}. Best: ${Math.max(P.pbest || 0, st)}.<br>This week: ${minTxt(week)}. All time: ${minTxt(total)}.</p>` +
+    `<p class="pgs">${st ? '🔥 ' : ''}Day streak: ${st} ${st === 1 ? 'day' : 'days'}. Best: ${Math.max(P.pbest || 0, st)}.</p>` +
+    `<details class="more"><summary>Weekly chart, totals and daily goal</summary><p class="pgs">This week: ${minTxt(week)}. All time: ${minTxt(total)}.</p>` +
     `<ul class="week" aria-label="Last seven days">${days.map(([s, long, l]) => `<li aria-label="${long}: ${minTxt(l.sec)}${l.met ? ', goal reached' : ''}"><i class="${l.met ? 'met' : ''}" style="height:${Math.max(3, Math.min(100, Math.round(l.sec / (g * 60) * 100)))}%"></i><span aria-hidden="true">${s}</span></li>`).join('')}</ul>` +
-    `<div class="set"><label>Daily goal <select id="pgsel">${[5, 10, 15, 20, 30, 45, 60].map(m => `<option value="${m}"${m === g ? ' selected' : ''}>${m} minutes</option>`).join('')}</select></label></div></section>`;
+    `<div class="set"><label>Daily goal <select id="pgsel">${[5, 10, 15, 20, 30, 45, 60].map(m => `<option value="${m}"${m === g ? ' selected' : ''}>${m} minutes</option>`).join('')}</select></label></div></details></section>`;
 }
 function practiceWire() {
   const s = $('#pgsel'); if (!s) return;
-  s.onchange = () => { P.set = P.set || {}; P.set.goal = +s.value; const d = dayLog(); if (d) d.met = d.sec >= P.set.goal * 60 ? true : d.met; save(); practiceRefresh(); const n = $('#pgsel'); if (n) n.focus(); say('Daily goal ' + s.value + ' minutes'); };
+  s.onchange = () => { P.set = P.set || {}; P.set.goal = +s.value; const d = dayLog(); if (d) d.met = d.sec >= P.set.goal * 60 ? true : d.met; save(); practiceRefresh(true); const n = $('#pgsel'); if (n) n.focus(); say('Daily goal ' + s.value + ' minutes'); };
 }
-function practiceRefresh() {
+function practiceRefresh(force) {
   const sec = $('#prsec'); if (!sec) return;
+  if (!force && sec.contains(document.activeElement)) return;          // never rebuild a box the player is using
+  const d = $('details', sec), open = d && d.open;
   sec.outerHTML = practiceHtml(); practiceWire();
+  const n = $('#prsec details'); if (n && open) n.open = true;
 }
 
 /* one tick of practice time (the timer below calls this every 5 seconds) */
@@ -50,6 +54,7 @@ function practiceTick(sec) {
     d.met = true; const n = dayStreak(); save();
     const m = 'Daily goal reached: ' + goalMin() + ' minutes. ' + (n > 1 ? n + ' days in a row.' : 'Your streak has started.');
     say(m); speak(m); try { keyFx(innerWidth / 2, innerHeight / 3); } catch (e) {}
+    if (typeof hudUpdate === 'function') hudUpdate();
   }
 }
 setInterval(() => {
@@ -57,6 +62,7 @@ setInterval(() => {
   practiceTick(5);
   const d = dayLog(); if (d && d.sec % 30 === 0) save();
   if ($('#pgoal')) practiceRefresh();
+  if (typeof hudUpdate === 'function') hudUpdate();
 }, 5000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
 addEventListener('pagehide', save);

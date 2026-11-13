@@ -6,7 +6,8 @@ const GROUPS = [
   ['Train your ear', ['ints', 'chords', 'prog', 'scales', 'meter']],
   ['Play', ['free', 'duet', 'voice', 'guitar', 'trumpet', 'sax', 'drums']]
 ];
-const SETTINGS = [['snd', 'Sound', true], ['lg', 'Larger display', false], ['hc', 'High contrast', false], ['rm', 'Reduce motion', false], ['tm', 'Question timer', true], ['ex', 'Double time', false], ['sp', 'Spoken mode: reads everything aloud, no screen reader needed', false], ['ua', 'Unlock all modes and lessons (skip the quota)', false]];
+const GCLS = { 'Read the page': 'g-read', 'Know your theory': 'g-theory', 'Train your ear': 'g-ear', 'Play': 'g-play' };
+const SETTINGS = [['snd', 'Sound', true], ['lg', 'Larger display', false], ['hc', 'High contrast', false], ['rm', 'Reduce motion', false], ['tm', 'Question timer', true], ['ex', 'Double time', false], ['sp', 'Spoken mode: reads everything aloud, no screen reader needed', false], ['wy', 'Explain answers even when I am right', false], ['ua', 'Unlock all modes and lessons (skip the quota)', false]];
 
 function applySet() {
   const c = document.documentElement.classList;
@@ -52,14 +53,20 @@ function menu() {
   app.innerHTML =
     `<div class="hero"><svg viewBox="0 0 300 56" aria-hidden="true">${[0, 1, 2, 3, 4].map(i => `<line x1="0" x2="300" y1="${8 + i * 10}" y2="${8 + i * 10}"/>`).join('')}` +
     `<ellipse cx="60" cy="38" rx="7" ry="5" transform="rotate(-20 60 38)"/><ellipse cx="120" cy="28" rx="7" ry="5" transform="rotate(-20 120 28)"/><ellipse cx="180" cy="18" rx="7" ry="5" transform="rotate(-20 180 18)"/><ellipse cx="240" cy="28" rx="7" ry="5" transform="rotate(-20 240 28)"/></svg>` +
-    `<h1 class="brand">STAFFSOUNDS</h1><p class="byline">Produced by <b>AWESOME KAM</b> of <b>The AWESOMEPLANET</b></p><p class="sub"><span class="ln">Ten questions a round.</span><span class="ln">Get ten answers right to unlock the next mode.</span><span class="ln">Every mode gets harder as you improve.</span></p></div>` +
-    (typeof whyHtml === 'function' ? whyHtml() : '') +
-    `<section class="starthere" aria-label="Start here"><h2>Start here</h2><div class="tools stack"><button type="button" class="next" data-lesson="start">${(P.tut || {}).start ? '▶ Replay the welcome tutorial' : '▶ Start the welcome tutorial'}</button>${fresh ? '<button type="button" data-lesson="notes">Then: your first lesson, reading notes</button>' : ''}<button type="button" id="gd">How to get around: keys and shortcuts (press ?)</button></div></section>` + practiceHtml() +
-    GROUPS.map(([t, ks]) => `<section class="grp" aria-label="${t}"><h2>${t}</h2>${ks.map(modeRow).join('')}</section>`).join('') +
-    `<p class="total"><span class="ln">Total XP: ${tot}.</span><span class="ln">Sound on for the ear modes.</span><span class="ln">Shortcuts: press D here to open the Keyboard duet. In any playground, Page Down and Page Up switch to the next and previous one, and Escape returns here.</span><span class="ln">Every mode has a <b>Lesson</b> button if you want a refresher.</span></p><p class="total" id="offl"></p>` +
+    `<h1 class="brand">STAFFSOUNDS</h1><p class="byline">Produced by <b>AWESOME KAM</b> of <b>The AWESOMEPLANET</b></p><p class="sub"><span class="ln">Ten questions a round. Ten right answers unlock the next mode.</span></p></div>` +
+    `<section class="starthere" aria-label="Start here"><h2>${fresh ? 'Start here' : 'Keep going'}</h2><div class="tools stack">` +
+    (fresh || !P.last || !MODES[P.last] || isLocked(P.last) ? `<button type="button" class="next" data-lesson="start">${(P.tut || {}).start ? '▶ Replay the welcome tutorial' : '▶ Start the welcome tutorial'}</button>${fresh ? '<button type="button" data-lesson="notes">Then: your first lesson, reading notes</button>' : ''}`
+      : `<button type="button" class="next cta" data-go="${P.last}">▶ Continue: ${MODES[P.last][0]}</button><button type="button" data-lesson="start">${(P.tut || {}).start ? 'Replay the welcome tutorial' : 'Welcome tutorial'}</button>`) +
+    `<button type="button" id="gd">How to get around (press ?)</button></div></section>` + practiceHtml() +
+    GROUPS.map(([t, ks]) => `<section class="grp modes ${GCLS[t]}" aria-label="${t}"><h2>${t}</h2>${ks.map(modeRow).join('')}</section>`).join('') +
+    `<div id="toolsslot"></div>` +
+    `<p class="total" id="offl"></p>` +
+    `<details class="tips more"><summary>Keyboard tips</summary><p class="total"><span class="ln">Press D here to open the Keyboard duet.</span><span class="ln">In any playground, Page Down and Page Up switch to the next and previous one, and Escape returns here.</span><span class="ln">Every mode has a <b>Lesson</b> button if you want a refresher.</span></p></details>` +
     `<details class="settings"><summary>Settings</summary><div class="set" role="group" aria-label="Accessibility and sound settings">${SETTINGS.map(([k, t, d]) => `<label><input type="checkbox" name="${k}" ${opt(k, d) ? 'checked' : ''} ${k === 'sp' && !('speechSynthesis' in window) ? 'disabled' : ''}>${t}</label>`).join('')}<label>Speech speed <input type="range" name="rate" min=".7" max="1.6" step=".1" value="${opt('rate', 1)}" style="width:110px"></label></div>` +
-    `<div class="tools"><button type="button" id="rs">Reset all progress</button></div></details>`;
+    `<div class="tools"><button type="button" id="rs">Reset all progress</button></div></details>` +
+    (typeof whyHtml === 'function' ? whyHtml() : '');
   $$('.row .go').forEach(b => { b.onclick = () => start(b.dataset.go); });
+  $$('.cta[data-go]').forEach(b => { b.onclick = () => start(b.dataset.go); });
   $('#gd').onclick = () => guide(); practiceWire(); toolsWire(); offlineStatus(); if (typeof heroStart === 'function') heroStart();
   $$('[data-lesson]').forEach(b => { b.onclick = () => tutorial(b.dataset.lesson); });
   $$('.set input').forEach(i => {
@@ -85,7 +92,7 @@ function start(m, skipLesson) {
   if (!skipLesson && MODES[m][2] && LESSONS[m]) return ready(m);                   // every later visit: a Ready screen first
   if (LIVE[m]) { PGK = m; return LIVE[m](); }
   S = { m, wk: WKNEXT, i: 0, sc: 0, ok: 0, st: 0, done: false, log: [], lv0: levelOf(m), lk0: Object.keys(UNLOCK).filter(isLocked) };
-  WKNEXT = false;
+  WKNEXT = false; P.last = m; save();
   ask();
 }
 
@@ -100,11 +107,12 @@ function ready(m, kk) {
     `<div id="rsum">${st.p.map(x => lines(x)).join('')}${typeof st.vis === 'string' ? st.vis : ''}` +
     (ki[k] ? `<div class="keyidea"><b>Key idea</b>${lines(ki[k], 'span')}</div>` : '') + '</div>' +
     `<div class="tools stack">${st.hear ? `<button type="button" class="mini" id="rh" ${st.hear[0]}>🔊 ${st.hear[1]}</button>` : ''}` +
-    `<button type="button" id="rg" class="next">Start the questions</button>` +
+    `<button type="button" id="rg" class="next">Start the questions</button></div>` +
+    `<details class="more"><summary>More lessons</summary><div class="tools stack">` +
     (n > 1 ? `<button type="button" id="rn">Another mini-lesson: ${nm(1)} →</button><button type="button" id="rp">← Previous mini-lesson: ${nm(-1)}</button>` : '') +
-    `<button type="button" id="rl">Review the whole lesson</button><button type="button" id="rm">← Back to the menu</button></div></article>`;
+    `<button type="button" id="rl">Review the whole lesson</button></div></details></article>`;
   wireDemos();
-  $('#rb').onclick = $('#rm').onclick = menu; $('#rl').onclick = () => tutorial(m); $('#rg').onclick = () => start(m, 1);
+  $('#rb').onclick = menu; $('#rl').onclick = () => tutorial(m); $('#rg').onclick = () => start(m, 1);
   if ($('#rn')) { $('#rn').onclick = () => ready(m, k + 1); $('#rp').onclick = () => ready(m, k - 1); }
   $('#rg').focus();
   speak('Round ' + ((p.rounds || 0) + 1) + '. ' + st.h + '. ' + st.p.map(plain).join(' ') + ' ' + plain(typeof st.vis === 'string' ? st.vis : '') + ' ' + (ki[k] ? 'Key idea. ' + ki[k] + ' ' : '') + 'Press Enter to start the questions.');
@@ -123,7 +131,7 @@ function ask() {
   else if (q0.play) setTimeout(() => { if (S && S.q === q0 && !S.done && !TUT_ON) q0.play(); }, 300);
 }
 
-const updTop = () => { const e = $('#sc'); if (e) e.textContent = `Level ${S.lvl} · Streak ${S.st} · ${S.sc} pts`; };
+const updTop = () => { const e = $('#sc'); if (e) e.textContent = `Level ${S.lvl}`; if (typeof hudUpdate === 'function') hudUpdate(); };
 
 function draw() {
   const q = S.q;
@@ -133,7 +141,8 @@ function draw() {
     `<div class="stage"><h2 class="q" id="qh" tabindex="-1"><span class="sr">Question ${S.i + 1} of 10. </span>${lines(q.q, 'span')}</h2>${q.vis || ''}` +
     `${q.play ? '<button class="play" id="pl">▶ Play again</button>' : ''}${q.key ? `<div class="key">${q.key}</div>` : ''}</div>` +
     `<div class="opts">${q.opts.map((o, i) => `<button data-o="${esc(o)}" data-i="${i}"><kbd aria-hidden="true">${i + 1}</kbd>${o}</button>`).join('')}</div>` +
-    `<div class="tools stack"><button id="hn">Hint: remove 2 wrong answers (−5 pts)</button>${q.hear ? '<button id="hr">🔊 Hear this note</button>' : ''}<button id="hw">Review the lesson</button></div>` +
+    `${q.hear ? '<div class="tools stack"><button id="hr">🔊 Hear this note</button></div>' : ''}` +
+    `<details class="help"><summary>Need help? Hint and lesson</summary><div class="tools stack"><button id="hn">Hint: remove 2 wrong answers (−5 XP)</button><button id="hw">Review the lesson</button></div></details>` +
     `<div id="fb" role="status" aria-live="polite"></div>${['notes', 'ints', 'chords', 'prog'].includes(S.m) ? pkHtml() + piano() : ''}`;
   updTop();
   $('#bk').onclick = menu;
@@ -143,7 +152,7 @@ function draw() {
   $('#qh').focus();
   $('#hn').onclick = () => {
     if (S.done || S.hint) return;
-    S.hint = 1; S.sc = Math.max(0, S.sc - 5);
+    S.hint = 1; S.sc = Math.max(0, S.sc - 5); pm(S.m).xp = Math.max(0, pm(S.m).xp - 5); save();
     const w = $$('.opts button').filter(b => b.dataset.o !== q.ans);
     shuf(w).slice(0, Math.min(2, w.length - 1)).forEach(b => { b.disabled = true; b.classList.add('gone'); });
     say('Two wrong answers removed.'); updTop();
@@ -156,14 +165,14 @@ function answer(o, timedOut) {
   if (S.done) return;
   S.done = true; clearTimer();
   const fast = Math.round(Math.max(0, TL / TT) * 5), q = S.q, good = o === q.ans, p = pm(S.m);
-  p.seen++; wkRec(S.m, q.ans, good);
+  p.seen++; wkRec(S.m, q.ans, good); let gain = 0;
   tone(good ? 72 : 50, 0, 0.25, 0.1);
   if (good) {
     tone(79, 0.12, 0.3, 0.1);
     S.ok++; S.st++; p.right++;
     Object.keys(UNLOCK).filter(k => UNLOCK[k] === S.m && p.right === QUOTA).forEach(k => { setTimeout(() => toast('🔓 Unlocked: ' + MODES[k][0]), 900); say('Unlocked: ' + MODES[k][0]); });
     const pts = 10 + Math.min(S.st - 1, 5) * 2 + (opt('tm', true) === false ? 0 : fast);
-    S.sc += pts; p.xp += pts;
+    S.sc += pts; p.xp += pts; gain = pts;
   } else {
     S.st = 0; S.re = (S.re || []).concat(wkKey(q.ans));
     S.log.push({ q: q.q, vis: q.vis || '', ans: q.ans, pick: o, why: q.why, timedOut: !!timedOut });
@@ -171,7 +180,8 @@ function answer(o, timedOut) {
   save();
   $$('.opts button').forEach(b => { b.disabled = true; if (b.dataset.o === q.ans) b.classList.add('ok'); else if (b.dataset.o === o) b.classList.add('bad'); });
   fxAns(good, $('.opts button.ok'), S.st);
-  $('#fb').innerHTML = `<div class="fb ${good ? '' : 'bad'}" tabindex="-1"><b>${good ? '✓ Correct' : (timedOut ? '⏱ Time’s up. ' : '✗ Not quite. ') + 'The answer was ' + q.ans}</b>${lines(q.why, 'span')}</div><button class="next" id="nx">${S.i >= 9 ? 'See results' : 'Next'}</button>`;
+  const why = good && !opt('wy', false) ? `<details class="why-d"><summary>Why is that right?</summary>${lines(q.why, 'span')}</details>` : lines(q.why, 'span');
+  $('#fb').innerHTML = `<div class="fb ${good ? '' : 'bad'}" tabindex="-1"><b>${good ? '✓ Correct' + (gain ? ` <span class="gain">+${gain} XP</span>` : '') : (timedOut ? '⏱ Time’s up. ' : '✗ Not quite. ') + 'The answer was ' + q.ans}</b>${why}</div><button class="next" id="nx">${S.i >= 9 ? 'See results' : 'Next'}</button>`;
   $('.fb').focus();
   if (spk()) speak((good ? 'Correct. ' : (timedOut ? 'Time is up. ' : 'Not quite. ') + 'The answer was ' + plain(String(q.ans)) + '. ') + plain(q.why) + ' Press Enter for the next question.');
   $('#nx').onclick = () => { S.i++; ask(); };
@@ -189,7 +199,7 @@ function end() {
     : '<p>A perfect round. Nothing to review.</p>';
   app.innerHTML =
     `<div class="end"><div class="stars" role="img" aria-label="${st} of 3 stars">${[0, 1, 2].map(i => `<span class="${i < st ? 'on' : ''}" style="animation-delay:${0.2 + i * 0.35}s">${i < st ? '★' : '☆'}</span>`).join('')}</div><div class="big" id="bg">0/10</div>` +
-    `<p class="lines"><span class="ln">${S.sc} points earned.</span><span class="ln">You are on level ${lv} in ${MODES[S.m][0].toLowerCase()}.</span></p>${up ? `<div class="lvup">Level up! Harder questions unlocked</div>` : ''}` +
+    `<p class="lines"><span class="ln">${S.sc} XP earned.</span><span class="ln">You are on level ${lv} in ${MODES[S.m][0].toLowerCase()}.</span></p>${up ? `<div class="lvup">Level up! Harder questions unlocked</div>` : ''}` +
     (nu.length ? `<div class="unlock" role="status"><span class="ln">🔓 You unlocked:</span>${nu.map(k => `<span class="ln"><b>${MODES[k][0]}</b></span>`).join('')}</div>` : '') +
     `<div class="btnrow">${nu.map(k => `<button type="button" class="primary" data-open="${k}">Open ${MODES[k][0]}</button>`).join('')}<button id="ag" class="${nu.length ? '' : 'primary'}">Play again</button><button id="mn">All modes</button></div></div>${review}`;
   $('#ag').onclick = () => start(S.m, 1); $('#mn').onclick = menu; $$('[data-open]').forEach(b => { b.onclick = () => start(b.dataset.open); });

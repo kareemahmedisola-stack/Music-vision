@@ -23,6 +23,7 @@ css/
   game.css              question screens, answers, piano, results
   lessons.css           lesson pages, tables, beat grid, circle of fifths
   instruments.css       guitar fretboard and instrument screens
+  ux.css                progress bar, calmer dialogue boxes, menu cards, phone + desktop sizing
 js/   (plain scripts, no modules, loaded in this order)
   state.js              helpers, saved progress (localStorage), settings
   audio.js              Web Audio: tones, demo players, piano voices
@@ -44,6 +45,7 @@ js/   (plain scripts, no modules, loaded in this order)
   recorder.js           record instruments and/or microphone, takes list, WAV download (IndexedDB)
   duet.js               keyboard duet: melody on the top row, chords on the home row
   speech.js             spoken mode (reads screens aloud with the browser's voice)
+  hud.js                the streak + XP bar pinned to the top of every page
   main.js               start-up
 ```
 

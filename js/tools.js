@@ -12,11 +12,11 @@ const tlModes = () => Object.keys(MODES).filter(k => MODES[k][2]);
 
 function toolsHtml() {
   const r = (id, t, d) => '<div class="row"><button type="button" class="go" id="' + id + '"><b>' + t + '</b><span>' + d + '</span></button></div>';
-  return '<section class="grp" aria-label="Study tools"><h2>Study tools</h2>' + r('tlw', 'My weak spots', 'The answers you miss most, and a round made of them') + r('tlt', 'Teacher mode', 'Progress reports, assignments and a class table') +
+  return '<section class="grp modes g-tools" aria-label="Study tools"><h2>Study tools</h2>' + r('tlw', 'My weak spots', 'The answers you miss most, and a round made of them') + r('tlt', 'Teacher mode', 'Progress reports, assignments and a class table') +
     r('tlc', 'Setup check', 'Test sound, microphone, MIDI, offline mode and storage') + r('tlb', 'Backup and restore', 'Save or move your progress and recordings') + '</section>';
 }
 function toolsWire() {
-  const h = $('.starthere'); if (!h || $('#tlw')) return; h.insertAdjacentHTML('afterend', bkReminderHtml() + planHtml() + toolsHtml()); planWire(); bkReminderWire(); try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+  const h = $('.starthere'); if (!h || $('#tlw')) return; h.insertAdjacentHTML('beforebegin', bkReminderHtml()); h.insertAdjacentHTML('afterend', planHtml()); const sl = $('#toolsslot'); if (sl) sl.outerHTML = toolsHtml(); else h.insertAdjacentHTML('afterend', toolsHtml()); planWire(); bkReminderWire(); try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
   $('#tlw').onclick = weakSpots; $('#tlt').onclick = teacher; $('#tlb').onclick = backup; $('#tlc').onclick = setupCheck;
   ['#tlw', '#tlt', '#tlb', '#tlc'].forEach(i => { $(i).onfocus = () => speak($(i).querySelector('b').textContent + '. ' + $(i).querySelector('span').textContent); });
 }

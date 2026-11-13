@@ -14,9 +14,18 @@
 <link rel="stylesheet" href="css/game.css">
 <link rel="stylesheet" href="css/lessons.css">
 <link rel="stylesheet" href="css/instruments.css">
+<link rel="stylesheet" href="css/ux.css">
 </head>
 <body>
 <a class="skip" href="#app">Skip to game</a>
+<div id="hud" class="hud" role="region" aria-label="Your progress">
+  <button type="button" id="hudb" class="hud-b">
+    <span class="chip c-streak" aria-hidden="true"><i>🔥</i><span><b id="hs">0</b><small>day streak</small></span></span>
+    <span class="chip c-xp" aria-hidden="true"><i>⭐</i><span><b id="hx">0</b><small>XP</small></span></span>
+    <span class="chip c-row" id="hrow" aria-hidden="true" hidden><i>🎯</i><span><b id="hr2">0</b><small>in a row</small></span></span>
+  </button>
+  <span class="hud-goal" aria-hidden="true"><i id="hg"></i></span>
+</div>
 <main id="app" tabindex="-1"></main>
 <div id="sr" class="sr" role="status" aria-live="polite"></div>
 <noscript><p style="padding:24px;font-family:sans-serif">Staffsounds needs JavaScript to run. Please enable it and reload.</p></noscript>
@@ -52,6 +61,7 @@
 <script src="js/practice.js"></script>
 <script src="js/guide.js"></script>
 <script src="js/speech.js"></script>
+<script src="js/hud.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

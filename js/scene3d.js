@@ -8,6 +8,17 @@ const H3_MEL = [2, 2, 3, 4, 4, 3, 2, 1, 0, 0, 1, 2, 2, 1, 1, 2, 4, 5, 6, 5, 4, 3
 const H3_CAP = [['Read music', 'notes, keys and note values'], ['Train your ears', 'intervals, chords and progressions'], ['Play', 'piano, guitar, drums and a keyboard duet'], ['Sing', 'find your key, fix pitch, make a choir'], ['Learn your way', 'songs, weak spots, a daily plan, offline']];
 const H3_WORD = 'STAFFSOUNDS';
 const h3Hue = s => (210 + s * 28) % 360;
+/* the tune: the height of each note on the 3D staff is its pitch (C major pentatonic, so it always sounds pleasant),
+   with a soft bass note at the start of each loop. Plays only while the animation runs and the tune is switched on. */
+const H3_PITCH = [60, 62, 64, 67, 69, 72, 74];
+const h3TuneSet = () => opt('h3s', !(typeof spk === 'function' && spk()));
+const h3TuneOn = () => h3TuneSet() && !H3.pause && opt('snd', true) !== false && !reduceMotion();
+function h3Play(s, i) {
+  if (!h3TuneOn()) return;
+  const m = H3_PITCH[Math.max(0, Math.min(6, s))];
+  tone(m, 0, 0.6, 0.16);
+  if (i % 7 === 0) { tone(m - 24, 0, 1.1, 0.14); tone(m - 12 + 7, 0.02, 0.9, 0.06); }
+}
 
 function h3Proj(x, y, z, W, Hh) {
   const cy = Math.cos(H3.yaw), sy = Math.sin(H3.yaw), cp = Math.cos(H3.pit), sp2 = Math.sin(H3.pit);
@@ -44,7 +55,7 @@ function h3Frame(cv, dt) {
   H3_MEL.forEach((s, i) => {
     const x = ((((i * 1.15 - t * sp) % L) + L) % L) - 12;
     if (x > 8.8 || x < -9) return; const y = (s - 2) * 0.4, z = 0.35 * Math.sin(x * 0.7 + t * 1.2) + 0.5 * Math.sin(t * 2 + i), hue = h3Hue(s), p = h3Proj(x, y + 0.12 * Math.sin(t * 3 + i), z, W, Hh);
-    if (x <= 0 && x > -0.8 && !(t - (H3.fired[i] || -9) < 3)) { H3.fired[i] = t; h3Burst(x, y, z, hue, 16); H3.eq.forEach((v, k) => { H3.eq[k] = Math.min(1, v + Math.max(0, 0.7 - Math.abs(k - (s * 5 + 4)) * 0.06)); }); H3.hits++; }
+    if (x <= 0 && x > -0.8 && !(t - (H3.fired[i] || -9) < 3)) { H3.fired[i] = t; h3Burst(x, y, z, hue, 16); h3Play(s, i); H3.eq.forEach((v, k) => { H3.eq[k] = Math.min(1, v + Math.max(0, 0.7 - Math.abs(k - (s * 5 + 4)) * 0.06)); }); H3.hits++; }
     const near = Math.max(0, 1 - Math.abs(x) / 2.2);
     for (let k = 1; k <= 5; k++) { const pt = h3Proj(x + k * 0.22, y, z, W, Hh); items.push([pt.z + 0.1, () => { h3Glow(g, pt, 10 * pt.f * 1.6 * (1 - k / 6), hue, 0.35 * (1 - k / 6)); }]); }
     items.push([p.z, () => { h3Glow(g, p, (22 + 22 * near) * p.f * 1.6, hue, 0.8); g.fillStyle = 'hsl(' + hue + ',100%,88%)'; g.beginPath(); g.arc(p.x, p.y, (6 + 3 * near) * p.f * 1.6, 0, 6.283); g.fill(); g.strokeStyle = 'hsla(' + hue + ',100%,80%,0.9)'; g.lineWidth = 2 * p.f * 1.6; const st = h3Proj(x + 0.22, y + 1.1, z, W, Hh); g.beginPath(); g.moveTo(p.x + 5 * p.f * 1.6, p.y); g.lineTo(st.x, st.y); g.stroke(); }]);
@@ -88,7 +99,7 @@ function h3Stop() { H3.run = false; cancelAnimationFrame(H3.raf); }
 function heroStart() {
   h3Stop(); const hero = $('.hero'); if (!hero || $('#h3d')) return; const sv = $('.hero svg'); if (sv) sv.style.display = 'none';
   hero.insertAdjacentHTML('afterbegin', '<canvas id="h3d" class="h3d" role="img" aria-label="Animated colourful musical notes flowing along a three dimensional staff, bursting into sparks. Staffsounds helps you read music, train your ears, play, and sing."></canvas>' +
-    '<button type="button" id="h3p" class="ghost h3p" aria-pressed="false">Pause animation</button> <button type="button" id="h3i" class="ghost h3p">Hear the intro</button>');
+    '<button type="button" id="h3p" class="ghost h3p" aria-pressed="false">Pause animation</button> <button type="button" id="h3m" class="ghost h3p" aria-pressed="false">Tune on</button> <button type="button" id="h3i" class="ghost h3p">Hear the intro</button>');
   const cv = $('#h3d'); h3Size(cv); h3Init(); H3.t = Math.random() * 3; H3.pause = false; H3.run = true;
   const still = reduceMotion(); let last = performance.now(), mx = 0;
   const frame = now => {
@@ -107,5 +118,8 @@ function heroStart() {
     if (!('speechSynthesis' in window)) { say(txt); return; }
     try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.rate = opt('rate', 1); u.onstart = () => { H3.wave = H3.t; }; speechSynthesis.speak(u); } catch (e) { say(txt); }
   };
+  const tuneBtn = () => { const b = $('#h3m'); b.textContent = h3TuneSet() ? 'Tune on' : 'Tune off'; b.setAttribute('aria-pressed', String(!h3TuneSet())); };
+  tuneBtn();
+  $('#h3m').onclick = () => { P.set = P.set || {}; P.set.h3s = !h3TuneSet(); save(); tuneBtn(); say(P.set.h3s ? 'Tune on. The staff plays a melody while it moves.' : 'Tune off.'); if (P.set.h3s) { FORCE = true; try { tone(72, 0, 0.5, 0.2); } finally { FORCE = false; } } };
   $('#h3p').onclick = () => { H3.pause = !H3.pause; $('#h3p').textContent = H3.pause ? 'Play animation' : 'Pause animation'; $('#h3p').setAttribute('aria-pressed', H3.pause); say(H3.pause ? 'Animation paused' : 'Animation playing'); };
 }
