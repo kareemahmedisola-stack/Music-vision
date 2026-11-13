@@ -28,6 +28,7 @@ let OFFREADY = false;
 addEventListener('blur', allOff);   // never leave notes hanging when the window loses focus
 
 applySet();
+freezeCheck();
 /* a brand-new player lands on the welcome tutorial; everyone else on the menu */
 if (!Object.values(P).some(x => x && x.xp) && !Object.keys(P.tut || {}).length) tutorial('start'); else menu();
 

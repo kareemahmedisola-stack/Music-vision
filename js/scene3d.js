@@ -116,7 +116,7 @@ function heroStart() {
     const txt = 'Welcome to Staffsounds, produced by Awesome Kam of The Awesomeplanet. Read music. Train your ears. Play. And sing.';
     H3.wave = H3.t; H3.t0 = H3.t - 5; if (H3.pause) h3Frame(cv, 0.016);
     if (!('speechSynthesis' in window)) { say(txt); return; }
-    try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.rate = opt('rate', 1); u.onstart = () => { H3.wave = H3.t; }; speechSynthesis.speak(u); } catch (e) { say(txt); }
+    try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.rate = opt('rate', 1); const vo = pickVoice(); if (vo) u.voice = vo; u.onstart = () => { H3.wave = H3.t; }; speechSynthesis.speak(u); } catch (e) { say(txt); }
   };
   const tuneBtn = () => { const b = $('#h3m'); b.textContent = h3TuneSet() ? 'Tune on' : 'Tune off'; b.setAttribute('aria-pressed', String(!h3TuneSet())); };
   tuneBtn();

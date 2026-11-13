@@ -110,3 +110,58 @@ details.help>.tools,details.more>.tools,.goal details>ol{margin-top:10px}
 .top button,.ltop button{min-height:40px}
 #nx{font-size:19px;padding:14px 28px}
 @media (max-width:480px){#nx{margin-left:0}}
+
+/* ================= level bar inside the XP chip ================= */
+.c-xp{overflow:hidden}
+.c-xp::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:var(--p,0%);background:var(--brass);transition:width .5s}
+
+/* ================= menu: daily challenge, quick round, badges ================= */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.starthere .duo .big-b{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;max-width:none;min-height:96px;padding:12px 14px;
+  text-align:left;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+.big-b>span{font-size:28px;line-height:1}
+.big-b b{font-size:17px}
+.big-b small{color:var(--mute);font-size:13px;line-height:1.3}
+.starthere .duo .big-b:hover,.starthere .duo .big-b:focus-visible{border-color:var(--brass)}
+.starthere .duo .big-b.done{border-color:var(--ok)}
+@media (max-width:380px){.duo{grid-template-columns:1fr}}
+.badges{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:12px 14px;margin:0}
+.badges>summary{border:0;padding-left:0}
+.bdg{list-style:none;margin:12px 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.bdg li{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:2px solid var(--line);border-radius:14px;background:var(--bg)}
+.bdg li i{font-style:normal;font-size:30px;line-height:1.1}
+.bdg li small{color:var(--mute);font-size:12px}
+.bdg li.earned{border-color:var(--brass)}
+.bdg li.lock{border-style:dashed}
+.revtag{color:var(--blue);font-weight:700}
+
+/* ================= the menu tune keys ================= */
+.tunepad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.tk{position:relative;min-height:112px;border-radius:16px;border:3px solid transparent;background:hsl(var(--h) 65% 30%);color:#fff;font:inherit;font-size:22px;font-weight:800;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:transform .1s;touch-action:manipulation}
+.tk kbd{background:rgba(255,255,255,.22);color:#fff;border-radius:6px;padding:1px 8px;font-size:14px}
+.tk.hit{transform:scale(.94);background:hsl(var(--h) 75% 42%)}
+.tk.next{border-color:#fff;box-shadow:0 0 0 3px hsl(var(--h) 90% 60%),0 0 28px hsl(var(--h) 90% 60%);animation:tkpulse 1s infinite}
+.tk.next::before{content:"▶ NEXT";position:absolute;top:7px;font-size:12px;letter-spacing:.08em}
+@keyframes tkpulse{50%{transform:scale(1.04)}}
+@media (min-width:720px){.tunepad{grid-template-columns:repeat(7,1fr)}}
+@media (hover:none){.tk kbd{display:none}}
+
+/* ================= teacher: due dates and leaderboard ================= */
+.due{margin:4px 0}
+.due.late,.due.late b{color:var(--bad)}
+.due.soon{color:var(--hot)}
+.due.ok{color:var(--ok)}
+.lb{list-style:none;padding:0;margin:8px 0 14px;display:grid;gap:6px}
+.lb li{padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--panel)}
+
+/* ================= playgrounds: wide on desktop (recorder beside the instrument), scrolling piano on phones ================= */
+main.play{max-width:1120px}
+@media (min-width:1100px){
+  main.play{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:0 24px;align-items:start}
+  main.play>*{grid-column:1}
+  main.play>.top,main.play>.stage{grid-column:1/-1}
+  main.play>.rec{grid-column:2;grid-row:3/span 8;margin-top:0;position:sticky;top:96px}
+}
+.pn.w{overflow-x:auto}
+@media (max-width:600px){.pn.w button:not(.b){min-width:30px}.pn.w{height:150px}}

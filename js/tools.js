@@ -47,7 +47,7 @@ function teacher() {
     '<div class="set" role="group" aria-label="Add a task"><label>Task <select id="tak"><option value="mode">Rounds in a mode</option><option value="song">A song score</option><option value="min">Practice minutes</option></select></label>' +
     '<label>Mode <select id="tam">' + tlModes().map(k => '<option value="' + k + '">' + esc(MODES[k][0]) + '</option>').join('') + '</select></label>' +
     '<label>Song <select id="tas2">' + songs.map(s => '<option>' + esc(s) + '</option>').join('') + '</select></label>' +
-    '<label>Target <input type="number" id="tan" min="1" max="100" value="3" style="width:70px;font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)"></label></div>' +
+    '<label>Due date <input type="date" id="tadue" style="font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)"></label><label>Target <input type="number" id="tan" min="1" max="100" value="3" style="width:70px;font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--panel);color:var(--ink)"></label></div>' +
     '<p class="total">Target means rounds, or percent for a song, or minutes.</p><div class="tools stack"><button type="button" id="taa">Add this task</button></div><ul id="tal" aria-label="Tasks in this assignment"></ul>' +
     '<div class="tools stack"><button type="button" id="tad" class="next">Download the assignment file</button></div>' +
     '<h2>4. Class table (for teachers)</h2><p>Open the progress reports your students sent you. The table keeps the latest report for each name.</p><div class="tools stack"><label class="ghost" style="cursor:pointer">Open student reports <input type="file" id="tci" accept=".json,application/json" multiple style="max-width:190px"></label></div>' +
@@ -59,19 +59,26 @@ function teacher() {
     const k = $('#tak').value, n = Math.max(1, Math.min(100, +$('#tan').value || 1)), it = k === 'mode' ? { k, m: $('#tam').value, n } : k === 'song' ? { k, s: $('#tas2').value, n: Math.min(100, n) } : { k, n };
     tasks.push(it); showT(); tlStatus('tst', 'Added: ' + tlItemText(it) + '.');
   };
-  $('#tad').onclick = () => { if (!tasks.length) { tlStatus('tst', 'Add at least one task first.'); return; } const t = $('#tat').value.trim() || 'Assignment'; tlDl(JSON.stringify({ app: 'staffwise', kind: 'assignment', v: 1, t, id: Date.now().toString(36), items: tasks }, null, 1), 'staffwise-assignment-' + t.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.json'); tlStatus('tst', 'Assignment file downloaded. Send it to your students.'); };
+  $('#tad').onclick = () => { if (!tasks.length) { tlStatus('tst', 'Add at least one task first.'); return; } const t = $('#tat').value.trim() || 'Assignment'; tlDl(JSON.stringify({ app: 'staffwise', kind: 'assignment', v: 1, t, id: Date.now().toString(36), items: tasks, due: $('#tadue').value || '' }, null, 1), 'staffwise-assignment-' + t.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.json'); tlStatus('tst', 'Assignment file downloaded. Send it to your students.'); };
   $('#tai').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (f) tlOpenAsg(await tlRead(f)); };
   $('#tci').onchange = async e => { const fs = [...e.target.files]; e.target.value = ''; let n = 0; for (const f of fs) { try { const tx = await tlRead(f); if (tx.includes('"kind": "handin"') || tx.includes('"kind":"handin"')) { if (tlOpenHand(tx)) n++; } else if (tlOpenRep(tx)) n++; } catch (x) {} } $('#tcl').innerHTML = tlClassHtml(); tlClassWire(); tlStatus('tst', n + (n === 1 ? ' report' : ' reports') + ' added to the class table.'); };
   tlClassWire();
 }
+/* "Due Friday 14 November: 3 days left" or "Overdue by 2 days", in words and colour */
+function tlDue(a) {
+  if (!a.due) return '';
+  const d = new Date(a.due + 'T23:59:59'), days = Math.ceil((d - Date.now()) / 864e5), when = d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+  const st = tlAsgDone(a) ? 'Done' : days < 0 ? 'Overdue by ' + (-days) + (days === -1 ? ' day' : ' days') : days === 0 ? 'Due today' : days + (days === 1 ? ' day left' : ' days left');
+  return '<p class="due ' + (tlAsgDone(a) ? 'ok' : days < 0 ? 'late' : days <= 2 ? 'soon' : '') + '"><b>Due ' + esc(when) + '</b>: ' + st + '</p>';
+}
 function tlAsgHtml() {
   const A = P.asg || []; if (!A.length) return '<p class="total">No assignments yet. Open an assignment file your teacher sent you.</p>';
-  return A.map((a, i) => '<section class="prac" aria-label="' + esc(a.t) + '"><h3>' + esc(a.t) + (tlAsgDone(a) ? ' ✓ done' : '') + '</h3><ul>' + tlAsgItems(a).map(x => '<li>' + (x.ok ? '✓ ' : '') + esc(tlItemText(x)) + ': ' + Math.min(x.have, x.n) + ' of ' + x.n + '</li>').join('') + '</ul><button type="button" class="ghost" data-ad="' + i + '">Remove</button></section>').join('') + '<section class="prac" aria-label="Hand in a recording"><h3>Hand in a recording</h3><p class="total">Pick an assignment and one of your recordings. The game makes a file to send to your teacher, who can play it from the class table.</p><div class="set"><label>Assignment <select id="hia">' + A.map((a, i) => '<option value="' + i + '">' + esc(a.t) + '</option>').join('') + '</select></label><label>Recording <select id="hit"><option value="">Loading…</option></select></label></div><div class="tools stack"><button type="button" id="hib">Download the hand-in file</button></div></section>';
+  return A.map((a, i) => '<section class="prac" aria-label="' + esc(a.t) + '"><h3>' + esc(a.t) + (tlAsgDone(a) ? ' ✓ done' : '') + '</h3>' + tlDue(a) + '<ul>' + tlAsgItems(a).map(x => '<li>' + (x.ok ? '✓ ' : '') + esc(tlItemText(x)) + ': ' + Math.min(x.have, x.n) + ' of ' + x.n + '</li>').join('') + '</ul><button type="button" class="ghost" data-ad="' + i + '">Remove</button></section>').join('') + '<section class="prac" aria-label="Hand in a recording"><h3>Hand in a recording</h3><p class="total">Pick an assignment and one of your recordings. The game makes a file to send to your teacher, who can play it from the class table.</p><div class="set"><label>Assignment <select id="hia">' + A.map((a, i) => '<option value="' + i + '">' + esc(a.t) + '</option>').join('') + '</select></label><label>Recording <select id="hit"><option value="">Loading…</option></select></label></div><div class="tools stack"><button type="button" id="hib">Download the hand-in file</button></div></section>';
 }
 function tlOpenAsg(txt) {
   try {
     const a = JSON.parse(txt); if (a.app !== 'staffwise' || a.kind !== 'assignment' || !Array.isArray(a.items)) throw 0;
-    P.asg = (P.asg || []).filter(x => x.id !== a.id); P.asg.push({ t: String(a.t).slice(0, 50), id: String(a.id), items: a.items.slice(0, 20).map(it => ({ k: it.k, m: it.m, s: it.s, n: +it.n || 1, b: it.k === 'mode' ? (pm(it.m).rounds || 0) : it.k === 'min' ? tlSecs() : 0 })) }); save();
+    P.asg = (P.asg || []).filter(x => x.id !== a.id); P.asg.push({ t: String(a.t).slice(0, 50), id: String(a.id), due: /^\d{4}-\d{2}-\d{2}$/.test(a.due || '') ? a.due : '', items: a.items.slice(0, 20).map(it => ({ k: it.k, m: it.m, s: it.s, n: +it.n || 1, b: it.k === 'mode' ? (pm(it.m).rounds || 0) : it.k === 'min' ? tlSecs() : 0 })) }); save();
     $('#tas').innerHTML = tlAsgHtml(); tlAsgWire(); tlStatus('tst', 'Assignment added: ' + a.t + '. Progress counts from now.');
   } catch (e) { tlStatus('tst', 'That is not a Staffsounds assignment file.'); }
 }
@@ -97,9 +104,9 @@ function tlHandHtml() {
   return '<h3>Hand-ins</h3><ul>' + TL_HAND.map((h, i) => '<li><b>' + esc(h.name) + '</b> for ' + esc(h.asg) + ' (' + esc(h.when || '') + ') <audio controls src="' + esc(h.take.data) + '" aria-label="Play ' + esc(h.name) + '"></audio> <button type="button" class="ghost" data-hs="' + i + '">Save to my recordings</button></li>').join('') + '</ul>';
 }
 function tlClassHtml() {
-  const C = (P.cls || []).slice().sort((a, b) => a.name.localeCompare(b.name)); if (!C.length) return '<p class="total">No reports opened yet.</p>' + tlHandHtml();
-  return '<table class="gtab"><thead><tr><th scope="col">Student</th><th scope="col">Points</th><th scope="col">Minutes</th><th scope="col">Rounds</th><th scope="col">Assignments done</th><th scope="col">Weak spots</th></tr></thead><tbody>' +
-    C.map(c => '<tr><th scope="row">' + esc(c.name) + '<br><small>' + esc(c.when || '') + '</small></th><td>' + c.xp + '</td><td>' + c.minutes + '</td><td>' + c.rounds + '</td><td>' + c.asg.filter(a => a.done).length + ' of ' + c.asg.length + '</td><td>' + esc(c.weak.slice(0, 3).join('; ') || 'none') + '</td></tr>').join('') + '</tbody></table>' +
+  const C = (P.cls || []).slice().sort((a, b) => b.xp - a.xp || a.name.localeCompare(b.name)); if (!C.length) return '<p class="total">No reports opened yet.</p>' + tlHandHtml();
+  return '<h3>Leaderboard</h3><ol class="lb" aria-label="Top students by points">' + C.slice(0, 3).map((c, i) => '<li><span aria-hidden="true">' + ['🥇', '🥈', '🥉'][i] + '</span> <b>' + esc(c.name) + '</b>: ' + c.xp + ' XP' + (c.streak ? ', ' + c.streak + '-day streak' : '') + '</li>').join('') + '</ol><table class="gtab"><thead><tr><th scope="col">Rank</th><th scope="col">Student</th><th scope="col">Points</th><th scope="col">Streak</th><th scope="col">Minutes</th><th scope="col">Rounds</th><th scope="col">Assignments done</th><th scope="col">Weak spots</th></tr></thead><tbody>' +
+    C.map((c, i) => '<tr><td>' + (i + 1) + '</td><th scope="row">' + esc(c.name) + '<br><small>' + esc(c.when || '') + '</small></th><td>' + c.xp + '</td><td>' + (c.streak || 0) + '</td><td>' + c.minutes + '</td><td>' + c.rounds + '</td><td>' + c.asg.filter(a => a.done).length + ' of ' + c.asg.length + '</td><td>' + esc(c.weak.slice(0, 3).join('; ') || 'none') + '</td></tr>').join('') + '</tbody></table>' +
     '<div class="tools stack"><button type="button" id="tcc">Download the class table (.csv)</button><button type="button" id="tcx">Clear the class table</button></div>' + tlHandHtml();
 }
 function tlClassWire() {

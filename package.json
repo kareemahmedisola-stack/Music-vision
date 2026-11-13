@@ -1,0 +1,8 @@
+{
+  "name": "staffsounds",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Staffsounds: learn to read music, know your theory and train your ear. Works without sight.",
+  "scripts": { "test": "node tests/smoke.js" },
+  "devDependencies": { "jsdom": "^24.0.0" }
+}

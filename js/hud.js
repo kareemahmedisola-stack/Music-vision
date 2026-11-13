@@ -10,7 +10,8 @@ function hudText() {
   const xp = hudXp(), ds = dayStreak(), inRound = !!(S && S.log && !S.live), d = dayLog() || { sec: 0 }, g = goalMin();
   return 'Your progress. ' + ds + (ds === 1 ? ' day streak. ' : ' day streak. ') + xp + ' XP in total. ' +
     (inRound ? S.st + (S.st === 1 ? ' answer' : ' answers') + ' in a row this round. ' : '') +
-    'Today: ' + minTxt(d.sec) + ' of a ' + g + ' minute goal.' + (d.met ? ' Goal reached.' : '');
+    'Level ' + ovLevel(xp) + ', ' + ovPct(xp) + ' percent of the way to level ' + (ovLevel(xp) + 1) + '. ' +
+    'Today: ' + minTxt(d.sec) + ' of a ' + g + ' minute goal.' + (d.met ? ' Goal reached.' : '') + ' This week: ' + weekDaysMet() + ' of ' + wgoal() + ' practice days.';
 }
 
 function hudUpdate() {
@@ -24,6 +25,8 @@ function hudUpdate() {
       if (old != null && v > old) {
         const chip = e.closest('.chip');
         chip.classList.remove('pop'); void chip.offsetWidth; chip.classList.add('pop');
+        if (key === 'ds') { cue('streak'); haptic('rew'); }
+        if (key === 'xp' && !inRound) cue('xp');
         if (key === 'xp') {                                    // a small "+12" floats up from the XP chip
           const plus = document.createElement('em'); plus.className = 'plus'; plus.textContent = '+' + (v - old);
           chip.appendChild(plus); setTimeout(() => plus.remove(), 1200);
@@ -33,6 +36,7 @@ function hudUpdate() {
     hudS[key] = v;
   };
   set('#hs', ds, 'ds'); set('#hx', xp, 'xp');
+  const xl = $('#hxl'); if (xl) { xl.textContent = 'XP · level ' + ovLevel(xp); xl.closest('.chip').style.setProperty('--p', ovPct(xp) + '%'); }
   const r = $('#hrow'); r.hidden = !inRound; if (inRound) set('#hr2', S.st, 'row'); else hudS.row = null;
   $('#hg').style.width = Math.min(100, Math.round(d.sec / (g * 60) * 100)) + '%';
   b.setAttribute('aria-label', hudText() + ' Press to hear this again.');
@@ -43,6 +47,7 @@ $('#hudb').onclick = () => { const t = hudText(); say(t); if (typeof spk === 'fu
 /* every time a screen is drawn: refresh the bar, and give the menu its wide layout */
 new MutationObserver(() => {
   app.classList.toggle('wide', !!app.querySelector(':scope > .hero'));
+  app.classList.toggle('play', !!(S && S.live));
   hudUpdate();
 }).observe(app, { childList: true });
 hudUpdate();

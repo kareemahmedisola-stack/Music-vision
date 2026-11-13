@@ -4,12 +4,21 @@
 let SID = 0;                       // newest utterance; older callbacks are ignored
 const spk = () => opt('sp', false) === true && 'speechSynthesis' in window;
 
+/* the chosen voice, and a speed for each kind of screen: questions (rounds), lessons, and everything else */
+const VOICES = () => { try { return speechSynthesis.getVoices() || []; } catch (e) { return []; } };
+function pickVoice() { const n = opt('voice', ''); return n ? VOICES().find(v => v.name === n) || null : null; }
+function rateNow() {
+  const base = opt('rate', 1);
+  if (S && S.q && !S.live) return opt('rateq', base);        // in a round
+  if (typeof TUT_ON !== 'undefined' && TUT_ON) return opt('ratel', base);       // in a lesson
+  return base;
+}
 function speak(t, cb, queue) {
   if (!spk() || !t) return;
   try {
     if (!queue) speechSynthesis.cancel();
     const id = ++SID, u = new SpeechSynthesisUtterance(String(t).replace(/♯/g, ' sharp').replace(/♭/g, ' flat').replace(/♮/g, ' natural').replace(/\s+/g, ' '));
-    u.rate = opt('rate', 1);
+    u.rate = rateNow(); const vo = pickVoice(); if (vo) u.voice = vo;
     if (cb) u.onend = () => { if (id === SID) cb(); };
     speechSynthesis.speak(u);
   } catch (e) {}
@@ -35,7 +44,7 @@ function speakQ(q, head, again) {
   if (q.play && !again) speak(stem + 'Listen.', () => { q.play(); setTimeout(() => speak(ops), 4500); });
   else speak(stem + (q.hear && !again ? '' : '') + ops);
 }
-const speakRound = again => speakQ(S && S.q, 'Question ' + (S ? S.i + 1 : 1) + ' of 10.', again);
+const speakRound = again => speakQ(S && S.q, 'Question ' + (S ? S.i + 1 : 1) + ' of ' + (S && S.n || 10) + '.' + (S && S.q && S.q.rev ? ' A review of something you missed before.' : ''), again);
 
 function speakStep(t, title, n, total, pre, post) {
   const body = t.practice ? 'Here is a practice question. Nothing is scored.' : (t.p || []).map(plain).join(' ') + ' ' + plain(typeof t.vis === 'string' ? t.vis : '');

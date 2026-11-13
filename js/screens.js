@@ -7,7 +7,7 @@ const GROUPS = [
   ['Play', ['free', 'duet', 'voice', 'guitar', 'trumpet', 'sax', 'drums']]
 ];
 const GCLS = { 'Read the page': 'g-read', 'Know your theory': 'g-theory', 'Train your ear': 'g-ear', 'Play': 'g-play' };
-const SETTINGS = [['snd', 'Sound', true], ['lg', 'Larger display', false], ['hc', 'High contrast', false], ['rm', 'Reduce motion', false], ['tm', 'Question timer', true], ['ex', 'Double time', false], ['sp', 'Spoken mode: reads everything aloud, no screen reader needed', false], ['wy', 'Explain answers even when I am right', false], ['ua', 'Unlock all modes and lessons (skip the quota)', false]];
+const SETTINGS = [['snd', 'Sound', true], ['lg', 'Larger display', false], ['hc', 'High contrast', false], ['rm', 'Reduce motion', false], ['tm', 'Question timer', true], ['ex', 'Double time', false], ['sp', 'Spoken mode: reads everything aloud, no screen reader needed', false], ['wy', 'Explain answers even when I am right', false], ['cue', 'Progress chimes (XP, streak, badges)', true], ['hap', 'Vibrate on answers and rewards (phones)', true], ['pan', 'Spatial sound: low notes left, high notes right', true], ['ua', 'Unlock all modes and lessons (skip the quota)', false]];
 
 function applySet() {
   const c = document.documentElement.classList;
@@ -57,23 +57,25 @@ function menu() {
     `<section class="starthere" aria-label="Start here"><h2>${fresh ? 'Start here' : 'Keep going'}</h2><div class="tools stack">` +
     (fresh || !P.last || !MODES[P.last] || isLocked(P.last) ? `<button type="button" class="next" data-lesson="start">${(P.tut || {}).start ? '▶ Replay the welcome tutorial' : '▶ Start the welcome tutorial'}</button>${fresh ? '<button type="button" data-lesson="notes">Then: your first lesson, reading notes</button>' : ''}`
       : `<button type="button" class="next cta" data-go="${P.last}">▶ Continue: ${MODES[P.last][0]}</button><button type="button" data-lesson="start">${(P.tut || {}).start ? 'Replay the welcome tutorial' : 'Welcome tutorial'}</button>`) +
-    `<button type="button" id="gd">How to get around (press ?)</button></div></section>` + practiceHtml() +
+    `${typeof engageHtml === 'function' ? engageHtml(fresh) : ''}</div></section>` + practiceHtml() + (typeof badgesHtml === 'function' ? badgesHtml() : '') +
     GROUPS.map(([t, ks]) => `<section class="grp modes ${GCLS[t]}" aria-label="${t}"><h2>${t}</h2>${ks.map(modeRow).join('')}</section>`).join('') +
     `<div id="toolsslot"></div>` +
     `<p class="total" id="offl"></p>` +
     `<details class="tips more"><summary>Keyboard tips</summary><p class="total"><span class="ln">Press D here to open the Keyboard duet.</span><span class="ln">In any playground, Page Down and Page Up switch to the next and previous one, and Escape returns here.</span><span class="ln">Every mode has a <b>Lesson</b> button if you want a refresher.</span></p></details>` +
-    `<details class="settings"><summary>Settings</summary><div class="set" role="group" aria-label="Accessibility and sound settings">${SETTINGS.map(([k, t, d]) => `<label><input type="checkbox" name="${k}" ${opt(k, d) ? 'checked' : ''} ${k === 'sp' && !('speechSynthesis' in window) ? 'disabled' : ''}>${t}</label>`).join('')}<label>Speech speed <input type="range" name="rate" min=".7" max="1.6" step=".1" value="${opt('rate', 1)}" style="width:110px"></label></div>` +
+    `<details class="settings"><summary>Settings</summary><div class="set" role="group" aria-label="Accessibility and sound settings">${SETTINGS.map(([k, t, d]) => `<label><input type="checkbox" name="${k}" ${opt(k, d) ? 'checked' : ''} ${k === 'sp' && !('speechSynthesis' in window) ? 'disabled' : ''}>${t}</label>`).join('')}<label>Speech speed <input type="range" name="rate" min=".7" max="1.6" step=".1" value="${opt('rate', 1)}" style="width:110px"></label><label>Question speed <input type="range" name="rateq" min=".7" max="1.8" step=".1" value="${opt('rateq', opt('rate', 1))}" style="width:110px"></label><label>Lesson speed <input type="range" name="ratel" min=".7" max="1.6" step=".1" value="${opt('ratel', opt('rate', 1))}" style="width:110px"></label><label>Voice <select name="voice" id="vsel"><option value="">Device default</option></select></label><button type="button" id="vtest" class="ghost">Test the voice</button></div>` +
     `<div class="tools"><button type="button" id="rs">Reset all progress</button></div></details>` +
     (typeof whyHtml === 'function' ? whyHtml() : '');
   $$('.row .go').forEach(b => { b.onclick = () => start(b.dataset.go); });
   $$('.cta[data-go]').forEach(b => { b.onclick = () => start(b.dataset.go); });
-  $('#gd').onclick = () => guide(); practiceWire(); toolsWire(); offlineStatus(); if (typeof heroStart === 'function') heroStart();
+  $('#gd').onclick = () => guide(); practiceWire(); if (typeof engageWire === 'function') engageWire(); toolsWire(); offlineStatus(); if (typeof heroStart === 'function') heroStart();
   $$('[data-lesson]').forEach(b => { b.onclick = () => tutorial(b.dataset.lesson); });
+  if (typeof voiceWire === 'function') voiceWire();
   $$('.set input').forEach(i => {
     i.onchange = () => {
       P.set = P.set || {}; P.set[i.name] = i.type === 'range' ? +i.value : i.checked; save(); applySet();
       if (i.name === 'sp') { if (i.checked) speak('Spoken mode on. Menus, questions, lessons, answers and instrument notes will be read aloud.'); else speakStop(); }
-      if (i.name === 'rate') speak('This is the speech speed.');
+      if (i.name === 'rate' || i.name === 'rateq' || i.name === 'ratel') { P.set.rate = P.set.rate || 1; speakRate(i.name); }
+      if (i.name === 'cue' && i.checked) cue('xp'); if (i.name === 'hap' && i.checked) haptic('ok');
     };
   });
   $$('.row .go').forEach(b => { b.onfocus = () => speak(b.querySelector('b').textContent.replace('🔒', 'Locked.') + '. ' + b.querySelector('span').textContent + (b.dataset.go && isLocked(b.dataset.go) ? '. ' + lockMsg(b.dataset.go) : '')); });
@@ -86,13 +88,14 @@ function menu() {
 }
 
 /* ---------------------------------------------------------------- a round */
+let QN = 0;                       // set to 5 by the Quick round button for the next round only
 function start(m, skipLesson) {
   if (isLocked(m)) { say(lockMsg(m)); speak(lockMsg(m)); const b = $(`[data-go="${m}"]`); if (b && b.classList) { b.classList.remove('nope'); void b.offsetWidth; b.classList.add('nope'); } return; }
   if (!skipLesson && !(P.tut || {})[m] && LESSONS[m]) return tutorial(m);          // first visit: the lesson opens by itself
   if (!skipLesson && MODES[m][2] && LESSONS[m]) return ready(m);                   // every later visit: a Ready screen first
   if (LIVE[m]) { PGK = m; return LIVE[m](); }
-  S = { m, wk: WKNEXT, i: 0, sc: 0, ok: 0, st: 0, done: false, log: [], lv0: levelOf(m), lk0: Object.keys(UNLOCK).filter(isLocked) };
-  WKNEXT = false; P.last = m; save();
+  S = { m, wk: WKNEXT, n: QN || 10, i: 0, sc: 0, ok: 0, st: 0, done: false, log: [], lv0: levelOf(m), lk0: Object.keys(UNLOCK).filter(isLocked) };
+  WKNEXT = false; QN = 0; P.last = m; save();
   ask();
 }
 
@@ -120,9 +123,9 @@ function ready(m, kk) {
 
 function ask() {
   TUT_ON = false;
-  if (S.i >= 10) return end();
-  S.lvl = levelOf(S.m);
-  S.q = wkBias(S.m, MODES[S.m][2](S.lvl - 1), S.lvl - 1);
+  if (S.i >= (S.n || 10)) return end();
+  S.lvl = S.daily && S.dlv ? S.dlv : levelOf(S.m);
+  S.q = S.daily ? withSeed(S.dseed + S.i * 977, () => MODES[S.m][2](S.lvl - 1)) : wkBias(S.m, MODES[S.m][2](S.lvl - 1), S.lvl - 1);
   S.done = false; S.hint = 0; S.ls = 0;
   draw(); startTimer(); scrollTo(0, 0);
   if (S.st > 2) $('.stage').classList.add('hot');
@@ -136,9 +139,9 @@ const updTop = () => { const e = $('#sc'); if (e) e.textContent = `Level ${S.lvl
 function draw() {
   const q = S.q;
   app.innerHTML =
-    `<div class="top"><button id="bk">← Menu</button><span>Question ${S.i + 1} of 10 · <b id="tt" aria-hidden="true"></b></span><span id="sc"></span></div>` +
-    `<div class="bar" aria-hidden="true"><i style="width:${S.i * 10}%"></i></div><div class="tm" role="timer" aria-label="Time left"><i></i></div>` +
-    `<div class="stage"><h2 class="q" id="qh" tabindex="-1"><span class="sr">Question ${S.i + 1} of 10. </span>${lines(q.q, 'span')}</h2>${q.vis || ''}` +
+    `<div class="top"><button id="bk">← Menu</button><span>${S.daily ? '🏆 Daily · ' : S.n === 5 ? '⚡ Quick · ' : ''}Question ${S.i + 1} of ${S.n || 10} · ${q.rev ? '<span class="revtag">🔁 Review</span> · ' : ''}<b id="tt" aria-hidden="true"></b></span><span id="sc"></span></div>` +
+    `<div class="bar" aria-hidden="true"><i style="width:${S.i * 100 / (S.n || 10)}%"></i></div><div class="tm" role="timer" aria-label="Time left"><i></i></div>` +
+    `<div class="stage"><h2 class="q" id="qh" tabindex="-1"><span class="sr">Question ${S.i + 1} of ${S.n || 10}. ${q.rev ? 'Review of an answer you missed before. ' : ''}</span>${lines(q.q, 'span')}</h2>${q.vis || ''}` +
     `${q.play ? '<button class="play" id="pl">▶ Play again</button>' : ''}${q.key ? `<div class="key">${q.key}</div>` : ''}</div>` +
     `<div class="opts">${q.opts.map((o, i) => `<button data-o="${esc(o)}" data-i="${i}"><kbd aria-hidden="true">${i + 1}</kbd>${o}</button>`).join('')}</div>` +
     `${q.hear ? '<div class="tools stack"><button id="hr">🔊 Hear this note</button></div>' : ''}` +
@@ -167,8 +170,9 @@ function answer(o, timedOut) {
   const fast = Math.round(Math.max(0, TL / TT) * 5), q = S.q, good = o === q.ans, p = pm(S.m);
   p.seen++; wkRec(S.m, q.ans, good); let gain = 0;
   tone(good ? 72 : 50, 0, 0.25, 0.1);
+  haptic(good ? 'ok' : 'bad');
   if (good) {
-    tone(79, 0.12, 0.3, 0.1);
+    tone(79 + Math.min(S.st, 5) * 2, 0.12, 0.3, 0.1);      // the second note climbs with each answer in a row
     S.ok++; S.st++; p.right++;
     Object.keys(UNLOCK).filter(k => UNLOCK[k] === S.m && p.right === QUOTA).forEach(k => { setTimeout(() => toast('🔓 Unlocked: ' + MODES[k][0]), 900); say('Unlocked: ' + MODES[k][0]); });
     const pts = 10 + Math.min(S.st - 1, 5) * 2 + (opt('tm', true) === false ? 0 : fast);
@@ -181,7 +185,7 @@ function answer(o, timedOut) {
   $$('.opts button').forEach(b => { b.disabled = true; if (b.dataset.o === q.ans) b.classList.add('ok'); else if (b.dataset.o === o) b.classList.add('bad'); });
   fxAns(good, $('.opts button.ok'), S.st);
   const why = good && !opt('wy', false) ? `<details class="why-d"><summary>Why is that right?</summary>${lines(q.why, 'span')}</details>` : lines(q.why, 'span');
-  $('#fb').innerHTML = `<div class="fb ${good ? '' : 'bad'}" tabindex="-1"><b>${good ? '✓ Correct' + (gain ? ` <span class="gain">+${gain} XP</span>` : '') : (timedOut ? '⏱ Time’s up. ' : '✗ Not quite. ') + 'The answer was ' + q.ans}</b>${why}</div><button class="next" id="nx">${S.i >= 9 ? 'See results' : 'Next'}</button>`;
+  $('#fb').innerHTML = `<div class="fb ${good ? '' : 'bad'}" tabindex="-1"><b>${good ? '✓ Correct' + (gain ? ` <span class="gain">+${gain} XP</span>` : '') : (timedOut ? '⏱ Time’s up. ' : '✗ Not quite. ') + 'The answer was ' + q.ans}</b>${why}</div><button class="next" id="nx">${S.i >= (S.n || 10) - 1 ? 'See results' : 'Next'}</button>`;
   $('.fb').focus();
   if (spk()) speak((good ? 'Correct. ' : (timedOut ? 'Time is up. ' : 'Not quite. ') + 'The answer was ' + plain(String(q.ans)) + '. ') + plain(q.why) + ' Press Enter for the next question.');
   $('#nx').onclick = () => { S.i++; ask(); };
@@ -190,23 +194,24 @@ function answer(o, timedOut) {
 
 function end() {
   clearTimer();
-  const a = S.ok, st = a >= 9 ? 3 : a >= 7 ? 2 : a >= 5 ? 1 : 0, p = pm(S.m), lv = levelOf(S.m), up = lv > S.lv0;
-  p.best = Math.max(p.best || 0, st); p.rounds = (p.rounds || 0) + 1; save(); if (typeof planDone === 'function') planDone('round');
+  const N = S.n || 10, a = S.ok, r = a / N, st = r >= 0.9 ? 3 : r >= 0.7 ? 2 : r >= 0.5 ? 1 : 0, p = pm(S.m), lv = levelOf(S.m), up = lv > S.lv0;
+  p.best = Math.max(p.best || 0, st); if (!S.daily && N === 10) p.rounds = (p.rounds || 0) + 1; else if (N !== 10 && !S.daily) p.qrounds = (p.qrounds || 0) + 1; save(); const bonus = S.daily && typeof dailyDone === 'function' ? dailyDone(a, N) : 0; if (typeof planDone === 'function') planDone('round');
   const nu = (S.lk0 || []).filter(k => !isLocked(k));
   const review = S.log.length
     ? `<section class="review" aria-label="Questions to review"><h2>Review ${S.log.length === 1 ? 'the one you missed' : 'the ' + S.log.length + ' you missed'}</h2><ul>${S.log.map(l =>
         `<li>${l.vis ? `<div class="mv">${l.vis}</div>` : ''}<b>${l.q}</b><br>${l.timedOut ? '<small>Time ran out. </small>' : `<small>You chose ${esc(l.pick)}. </small>`}Answer: <b>${l.ans}</b><br><small>${lines(l.why, 'span')}</small></li>`).join('')}</ul></section>`
     : '<p>A perfect round. Nothing to review.</p>';
   app.innerHTML =
-    `<div class="end"><div class="stars" role="img" aria-label="${st} of 3 stars">${[0, 1, 2].map(i => `<span class="${i < st ? 'on' : ''}" style="animation-delay:${0.2 + i * 0.35}s">${i < st ? '★' : '☆'}</span>`).join('')}</div><div class="big" id="bg">0/10</div>` +
-    `<p class="lines"><span class="ln">${S.sc} XP earned.</span><span class="ln">You are on level ${lv} in ${MODES[S.m][0].toLowerCase()}.</span></p>${up ? `<div class="lvup">Level up! Harder questions unlocked</div>` : ''}` +
+    `<div class="end"><div class="stars" role="img" aria-label="${st} of 3 stars">${[0, 1, 2].map(i => `<span class="${i < st ? 'on' : ''}" style="animation-delay:${0.2 + i * 0.35}s">${i < st ? '★' : '☆'}</span>`).join('')}</div><div class="big" id="bg">0/${N}</div>` +
+    `<p class="lines"><span class="ln">${S.sc + bonus} XP earned${bonus ? ` (including ${bonus} bonus for the daily challenge)` : ''}.</span><span class="ln">You are on level ${lv} in ${MODES[S.m][0].toLowerCase()}.</span></p>${up ? `<div class="lvup">Level up! Harder questions unlocked</div>` : ''}` +
     (nu.length ? `<div class="unlock" role="status"><span class="ln">🔓 You unlocked:</span>${nu.map(k => `<span class="ln"><b>${MODES[k][0]}</b></span>`).join('')}</div>` : '') +
     `<div class="btnrow">${nu.map(k => `<button type="button" class="primary" data-open="${k}">Open ${MODES[k][0]}</button>`).join('')}<button id="ag" class="${nu.length ? '' : 'primary'}">Play again</button><button id="mn">All modes</button></div></div>${review}`;
-  $('#ag').onclick = () => start(S.m, 1); $('#mn').onclick = menu; $$('[data-open]').forEach(b => { b.onclick = () => start(b.dataset.open); });
+  $('#ag').onclick = () => { if (S.daily) return menu(); const k = S.m; if (N === 5) QN = 5; start(k, 1); }; $('#mn').onclick = menu; $$('[data-open]').forEach(b => { b.onclick = () => start(b.dataset.open); });
   ($$('[data-open]')[0] || $('#ag')).focus();
-  countUp($('#bg'), a, '/10');
-  say(`Round complete. ${a} out of 10 correct, ${st} stars.${nu.length ? ' Unlocked: ' + nu.map(k => MODES[k][0]).join(', ') + '.' : ''}`);
-  if (spk()) speak(`Round complete. ${a} out of 10 correct, ${st} stars.${up ? ' Level up.' : ''}${nu.length ? ' You unlocked ' + nu.map(k => MODES[k][0]).join(' and ') + '.' : ''} ${S.log.length ? 'Review the ' + S.log.length + ' you missed below.' : 'A perfect round.'}`);
+  countUp($('#bg'), a, '/' + N);
+  if (typeof badgeCheck === 'function') setTimeout(badgeCheck, 1400);
+  say(`Round complete. ${a} out of ${N} correct, ${st} stars.${nu.length ? ' Unlocked: ' + nu.map(k => MODES[k][0]).join(', ') + '.' : ''}`);
+  if (spk()) speak(`Round complete. ${a} out of ${N} correct, ${st} stars.${up ? ' Level up.' : ''}${nu.length ? ' You unlocked ' + nu.map(k => MODES[k][0]).join(' and ') + '.' : ''} ${S.log.length ? 'Review the ' + S.log.length + ' you missed below.' : 'A perfect round.'}`);
   fxEnd(a, st, up || nu.length > 0);
 }
 

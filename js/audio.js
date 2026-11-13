@@ -2,6 +2,7 @@
 let ac, MS, AN;                 // AudioContext, master gain, analyser
 let RX, RD, RA, RSEND;             // recorder: mix bus, stream destination, level meter, instrument send
 let VOL = 1.0, INS = 'piano';   // playground volume and instrument
+let PAN = 0;                    // -1 (left) .. 1 (right) for the next tones; 0 = centre
 let FORCE = false;              // lessons play sound even if the Sound setting is off
 
 function ctx() {
@@ -16,7 +17,8 @@ function tone(m, t, d, v) {
   if (!FORCE && opt('snd', true) === false) return;
   const a = ctx(), o = a.createOscillator(), g = a.createGain(), s = a.currentTime + t + 0.02;
   o.type = 'triangle'; o.frequency.value = hz(m);
-  o.connect(g); g.connect(a.destination);
+  o.connect(g);
+  if (PAN && a.createStereoPanner) { const pn = a.createStereoPanner(); pn.pan.value = Math.max(-1, Math.min(1, PAN)); g.connect(pn); pn.connect(a.destination); } else g.connect(a.destination);
   g.gain.setValueAtTime(0, s);
   g.gain.linearRampToValueAtTime((v || 0.2) * 1.5, s + 0.02);   // lesson and quiz sounds, a little louder
   g.gain.exponentialRampToValueAtTime(0.0001, s + d);
@@ -31,7 +33,9 @@ const dmidi = s => 12 * (Math.floor(s / 7) + 1) + SC[s % 7]; // diatonic staff i
 
 /* ---- demo helpers ---- */
 const playSeq = (notes, gap, dur, v) => notes.forEach((m, i) => tone(m, i * gap, dur, v || 0.2));
-const playScale = r => playSeq([0, 2, 4, 5, 7, 9, 11, 12].map(x => r + x), 0.3, 0.45);
+const spatial = () => opt('pan', true) !== false;
+/* a scale sweeps from the left ear to the right ear as it climbs, so the rise can be heard in space */
+const playScale = r => { [0, 2, 4, 5, 7, 9, 11, 12].forEach((x, i) => { PAN = spatial() ? -0.7 + i * 0.2 : 0; tone(r + x, i * 0.3, 0.45); }); PAN = 0; };
 const playInterval = (n, r) => { r = r || 60; tone(r, 0, 0.9); tone(r + n, 0.85, 1); };
 /* broken (one by one) then together, like the chord questions */
 function playChord(iv, r) {

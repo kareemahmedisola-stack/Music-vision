@@ -11,14 +11,24 @@ const wkKey = a => String(a).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
 function wkRec(m, ans, good) {
   P.wk = P.wk || {}; const w = P.wk[m] = P.wk[m] || {}, k = wkKey(ans); if (!k) return;
   const r = w[k] = w[k] || [0, 0]; r[0]++; if (!good) r[1]++;
+  srRec(m, k, good);
   const ks = Object.keys(w); if (ks.length > 160) { ks.sort((a, b) => w[a][0] - w[b][0]).slice(0, ks.length - 160).forEach(x => delete w[x]); }
 }
+/* spaced repetition: a miss is due again today; each later right answer pushes the next review further away (1, 3, 7, 14, 30 days) */
+const SR_STEPS = [1, 3, 7, 14, 30], srToday = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 6e4) / 864e5);
+function srRec(m, k, good) {
+  P.sr = P.sr || {}; const s = P.sr[m] = P.sr[m] || {}, e = s[k];
+  if (!good) { s[k] = { b: 0, due: srToday() }; return; }
+  if (!e) return;
+  e.b++; if (e.b >= SR_STEPS.length) delete s[k]; else e.due = srToday() + SR_STEPS[e.b];
+}
+const srDue = m => { const s = (P.sr || {})[m] || {}, t = srToday(); return Object.keys(s).filter(k => s[k].due <= t); };
 const wkScore = r => (r[1] + 1) / (r[0] + 2);
 const wkIsWeak = r => r[1] >= 1 && wkScore(r) >= 0.4;
 const wkWeak = m => { const w = (P.wk || {})[m] || {}; return Object.keys(w).filter(k => wkIsWeak(w[k])); };
 function wkBias(m, q, lv) {
-  const pool = new Set(wkWeak(m).concat(S.re || [])); if (!pool.size || Math.random() > (S.wk ? 0.85 : 0.35)) return q;
-  for (let i = 0; i < 40; i++) { const q2 = MODES[m][2](lv); if (pool.has(wkKey(q2.ans))) return q2; }
+  const due = new Set(srDue(m)), pool = new Set(wkWeak(m).concat(S.re || [], [...due])); if (!pool.size || Math.random() > (due.size ? 0.6 : S.wk ? 0.85 : 0.35)) return q;
+  for (let i = 0; i < 40; i++) { const q2 = MODES[m][2](lv), k = wkKey(q2.ans); if (pool.has(k)) { if (due.has(k)) q2.rev = true; return q2; } }
   return q;
 }
 function wkAll() {

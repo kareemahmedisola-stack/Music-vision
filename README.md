@@ -180,3 +180,17 @@ In the duet (`js/fixer.js`): press **/** (or *Capture my playing*), play chords 
 - The app is now **STAFFSOUNDS, produced by AWESOME KAM of The AWESOMEPLANET** (hero, page title, spoken welcome, visible text). Internal data keys and file tags stay `staffwise` so saved progress and old backups keep working.
 - `js/why.js` – the "Why explore everything" panel: five reasons with published statistics and links (Cepeda 2006; Roediger and Karpicke 2006; Coulton 2015; WHO hearing warning 2022 via Devdiscourse; Sala and Gobet 2020). `sw.js` is `staffwise-v22`.
 - v17: the scene now spells STAFFSOUNDS in glowing extruded 3D letters that fly in, land with sparks and ride a wave; a Hear the intro button speaks a short welcome (browser speech) while the letters pulse in turn. `sw.js` is `staffwise-v23`.
+
+
+## What is new in this version
+- **Progress bar** pinned to the top of every page: day streak, XP with overall level, answers in a row. One button that reads it aloud.
+- **Chimes and vibration** for XP, streak, badges and levels; each can be switched off in Settings.
+- **Daily challenge** (same ten questions all day, +20 XP, +10 for perfect), **Quick round** (5 questions), **streak freeze** (one missed day a week is forgiven), **weekly goal**.
+- **Badges and overall level**, and a **share card** (picture and text).
+- **Spaced repetition**: answers you miss come back after 1, 3, 7, 14 and 30 days, marked "Review".
+- **Spatial sound**: low notes in the left ear, high notes in the right (menu tune, scales).
+- **Voice choice** and separate speaking speeds for menus, questions and lessons.
+- **Play the menu tune** yourself (follow the glow, or play by ear).
+- **Teacher mode**: due dates on assignments, a leaderboard in the class table.
+- **Built-in accessibility check** and an automatic test (`npm test`). See A11Y-TESTING.md for the by-hand checklist.
+- Files: `js/engage.js`, `js/hud.js`, `js/tunegame.js`, `js/a11yaudit.js`, `css/ux.css`; lessons are split into `js/lessons-read.js`, `-ear.js`, `-theory.js`, `-play.js`.
