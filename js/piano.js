@@ -44,7 +44,7 @@ function piano(n, base) {
   return '<div class="pn' + (n > 20 ? ' w' : '') + '" role="group" aria-label="Piano. On your computer keyboard, A S D F G H J K L semicolon and apostrophe are the white keys from middle C, and W E T Y U O P are the sharps and flats between them. Hold a key to sustain.">' +
     [...Array(n).keys()].map(i => {
       const m = base + i, bk = [1, 3, 6, 8, 10].includes(i % 12);
-      return `<button type="button" data-h="${KH[m] || ''}" data-k="${m}" class="${bk ? 'b' : ''}" aria-label="${sp(NM2[m % 12])}">${bk ? '' : NM2[m % 12]}</button>`;
+      return `<button type="button" data-h="${KH[m] || ''}" data-k="${m}" class="${bk ? 'b' : ''}" aria-label="${sp(NM2[m % 12])} octave ${Math.floor(m / 12) - 1}">${bk ? '' : NM2[m % 12]}</button>`;
     }).join('') + '</div>';
 }
 

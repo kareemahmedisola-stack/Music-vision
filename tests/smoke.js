@@ -97,7 +97,7 @@ code += `
     ok(typeof pickVoice === 'function' && rateNow() > 0, 'voice helpers'); playScale(60); ok(PAN === 0, 'pan is reset after a scale');
     ok(typeof tlDue === 'function' && tlDue({ due: '2999-01-01', items: [] }).includes('Due'), 'assignment due text');
   } catch (e) { fails.push('crashed: ' + (e && e.stack || e)); }
-  const hard = notes.filter(n => /has no name|used \\d+ times|no description|no alt/.test(n)), soft = notes.filter(n => !hard.includes(n));
+  const hard = notes.filter(n => /has no name|used \\d+ times|no description|no alt|appears \\d+ times|too vague/.test(n)), soft = notes.filter(n => !hard.includes(n));
   console.log('Accessibility notes (' + notes.length + '):'); [...new Set(notes)].slice(0, 25).forEach(n => console.log('  - ' + n));
   fails.push(...[...new Set(hard)].map(n => 'accessibility: ' + n));
   console.log(fails.length ? '\\nFAILED (' + fails.length + '):\\n  ' + fails.join('\\n  ') : '\\nAll checks passed.');

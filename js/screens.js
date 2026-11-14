@@ -7,7 +7,7 @@ const GROUPS = [
   ['Play', ['free', 'duet', 'voice', 'guitar', 'trumpet', 'sax', 'drums']]
 ];
 const GCLS = { 'Read the page': 'g-read', 'Know your theory': 'g-theory', 'Train your ear': 'g-ear', 'Play': 'g-play' };
-const SETTINGS = [['snd', 'Sound', true], ['lg', 'Larger display', false], ['hc', 'High contrast', false], ['rm', 'Reduce motion', false], ['tm', 'Question timer', true], ['ex', 'Double time', false], ['sp', 'Spoken mode: reads everything aloud, no screen reader needed', false], ['wy', 'Explain answers even when I am right', false], ['cue', 'Progress chimes (XP, streak, badges)', true], ['hap', 'Vibrate on answers and rewards (phones)', true], ['pan', 'Spatial sound: low notes left, high notes right', true], ['ua', 'Unlock all modes and lessons (skip the quota)', false]];
+const SETTINGS = [['snd', 'Sound', true], ['lg', 'Larger display', false], ['hc', 'High contrast', false], ['rm', 'Reduce motion', false], ['tm', 'Question timer', true], ['ex', 'Double time', false], ['sp', 'Spoken mode: reads everything aloud, no screen reader needed', false], ['wy', 'Explain answers even when I am right', false], ['kn', 'Show note names on piano keys', true], ['cue', 'Progress chimes (XP, streak, badges)', true], ['hap', 'Vibrate on answers and rewards (phones)', true], ['pan', 'Spatial sound: low notes left, high notes right', true], ['ua', 'Unlock all modes and lessons (skip the quota)', false]];
 
 function applySet() {
   const c = document.documentElement.classList;
@@ -139,7 +139,7 @@ const updTop = () => { const e = $('#sc'); if (e) e.textContent = `Level ${S.lvl
 function draw() {
   const q = S.q;
   app.innerHTML =
-    `<div class="top"><button id="bk">← Menu</button><span>${S.daily ? '🏆 Daily · ' : S.n === 5 ? '⚡ Quick · ' : ''}Question ${S.i + 1} of ${S.n || 10} · ${q.rev ? '<span class="revtag">🔁 Review</span> · ' : ''}<b id="tt" aria-hidden="true"></b></span><span id="sc"></span></div>` +
+    `<div class="top"><button id="bk" type="button" aria-label="Menu. This leaves the round.">← Menu</button><span>${S.daily ? '🏆 Daily · ' : S.n === 5 ? '⚡ Quick · ' : ''}Question ${S.i + 1} of ${S.n || 10} · ${q.rev ? '<span class="revtag">🔁 Review</span> · ' : ''}<b id="tt" aria-hidden="true"></b></span><span id="sc"></span></div>` +
     `<div class="bar" aria-hidden="true"><i style="width:${S.i * 100 / (S.n || 10)}%"></i></div><div class="tm" role="timer" aria-label="Time left"><i></i></div>` +
     `<div class="stage"><h2 class="q" id="qh" tabindex="-1"><span class="sr">Question ${S.i + 1} of ${S.n || 10}. ${q.rev ? 'Review of an answer you missed before. ' : ''}</span>${lines(q.q, 'span')}</h2>${q.vis || ''}` +
     `${q.play ? '<button class="play" id="pl">▶ Play again</button>' : ''}${q.key ? `<div class="key">${q.key}</div>` : ''}</div>` +
@@ -185,7 +185,7 @@ function answer(o, timedOut) {
   $$('.opts button').forEach(b => { b.disabled = true; if (b.dataset.o === q.ans) b.classList.add('ok'); else if (b.dataset.o === o) b.classList.add('bad'); });
   fxAns(good, $('.opts button.ok'), S.st);
   const why = good && !opt('wy', false) ? `<details class="why-d"><summary>Why is that right?</summary>${lines(q.why, 'span')}</details>` : lines(q.why, 'span');
-  $('#fb').innerHTML = `<div class="fb ${good ? '' : 'bad'}" tabindex="-1"><b>${good ? '✓ Correct' + (gain ? ` <span class="gain">+${gain} XP</span>` : '') : (timedOut ? '⏱ Time’s up. ' : '✗ Not quite. ') + 'The answer was ' + q.ans}</b>${why}</div><button class="next" id="nx">${S.i >= (S.n || 10) - 1 ? 'See results' : 'Next'}</button>`;
+  $('#fb').innerHTML = `<div class="fb ${good ? '' : 'bad'}" tabindex="-1"><b>${good ? '✓ Correct' + (gain ? ` <span class="gain">+${gain} XP</span>` : '') : (timedOut ? '⏱ Time’s up. ' : '✗ Not quite. ') + 'The answer was ' + q.ans}</b>${why}</div><button class="next" id="nx">${S.i >= (S.n || 10) - 1 ? 'See results' : 'Next question'}</button>`;
   $('.fb').focus();
   if (spk()) speak((good ? 'Correct. ' : (timedOut ? 'Time is up. ' : 'Not quite. ') + 'The answer was ' + plain(String(q.ans)) + '. ') + plain(q.why) + ' Press Enter for the next question.');
   $('#nx').onclick = () => { S.i++; ask(); };
